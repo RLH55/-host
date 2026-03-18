@@ -31,8 +31,8 @@ BOTS_CONFIG_FILE = os.path.join(BASE_DIR, "bots_config.json")
 PIDS_FILE = os.path.join(BASE_DIR, "pids.json")
 
 # الحساب الرئيسي (المسؤول)
-ADMIN_USERNAME = "OMAR_ADMIN"
-ADMIN_PASSWORD = "OMAR_2026_BRO"
+ADMIN_USERNAME = "BRO1983"
+ADMIN_PASSWORD = "OMAROMAR19830"
 
 # ============== Keep-Alive System ==============
 
