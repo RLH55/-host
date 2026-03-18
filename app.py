@@ -37,19 +37,26 @@ ADMIN_PASSWORD = "OMAR_2026_BRO"
 # ============== Keep-Alive System ==============
 
 def keep_alive_ping():
-    """نظام Keep-Alive صامت - يمنع الموقع من الدخول في وضع النوم دون إزعاج المستخدم"""
+    """نظام Keep-Alive صامت تماماً - يعمل في الخلفية فقط ولا يؤثر على الواجهة"""
     while True:
         try:
             # الانتظار لمدة 10 دقائق
             time.sleep(600)
             
-            # محاولة الحصول على رابط الموقع من البيئة أو استخدام localhost
-            # نستخدم الرأس 'User-Agent' لتعريف الطلب كطلب نظام داخلي
+            # الحصول على رابط الموقع من متغيرات البيئة الخاصة بـ Render
+            # إذا لم يكن موجوداً، لا نفعل شيئاً لتجنب أي مشاكل في localhost
             own_url = os.environ.get("RENDER_EXTERNAL_URL")
             if own_url:
                 if not own_url.startswith("http"):
                     own_url = f"https://{own_url}"
-                requests.get(f"{own_url}/api/ping", headers={"User-Agent": "Internal-Keep-Alive"}, timeout=10)
+                
+                # إرسال طلب صامت تماماً مع User-Agent مخصص
+                # لا نستخدم أي كود يسبب تحديث الصفحة في المتصفح
+                requests.get(
+                    f"{own_url}/api/ping", 
+                    headers={"User-Agent": "Internal-Keep-Alive-System-Silent"}, 
+                    timeout=10
+                )
         except Exception:
             pass
 
