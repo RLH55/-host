@@ -1,1144 +1,272 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OMAR BRO HOST</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    :root {
-      --bg: #05060a;
-      --muted: #7a8a9a;
-      --accent: #00d4ff;
-      --accent-light: #6aefff;
-      --accent-dark: #0099cc;
-      --panel-border: rgba(0, 212, 255, 0.12);
-      --card-bg: rgba(10, 15, 28, 0.85);
-      --card-bg2: rgba(6, 10, 20, 0.95);
-      --gradient: linear-gradient(135deg, #00d4ff 0%, #0088ff 50%, #0066cc 100%);
-      --success: #00ff88;
-      --error: #ff4444;
-      --warning: #ffaa00;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', 'Tajawal', sans-serif;
-      background: var(--bg); color: #e0ecf5;
-      min-height: 100vh; overflow-x: hidden;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMAR BRO HOST | لوحة التحكم</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #00d4ff;
+            --accent: #00d4ff;
+            --accent-light: #70eaff;
+            --bg: #050810;
+            --panel: rgba(13, 18, 33, 0.95);
+            --panel-border: rgba(0, 212, 255, 0.15);
+            --text: #e0e6ed;
+            --muted: #8899aa;
+            --success: #00ff88;
+            --error: #ff4444;
+            --gradient: linear-gradient(135deg, #00d4ff, #0066ff);
+        }
 
-    /* ===== Canvas BG ===== */
-    #bgCanvas {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      z-index: 0; pointer-events: none;
-    }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(0, 212, 255, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(0, 102, 255, 0.05) 0%, transparent 40%);
+        }
 
-    /* ===== Topbar ===== */
-    .topbar {
-      position: sticky; top: 0; z-index: 1000;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 24px;
-      background: rgba(5, 6, 10, 0.92);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--panel-border);
-      box-shadow: 0 2px 20px rgba(0,0,0,0.4);
-      margin-bottom: 0;
-    }
-    body { padding-bottom: 50px; }
-    .topbar-left { display: flex; align-items: center; gap: 14px; }
-    .home-btn {
-      background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.2);
-      color: var(--accent); width: 36px; height: 36px; border-radius: 9px;
-      cursor: pointer; font-size: 18px; display: flex; align-items: center;
-      justify-content: center; transition: all 0.3s;
-    }
-    .home-btn:hover { background: rgba(0,212,255,0.18); transform: scale(1.1); }
-    .panel-logo {
-      font-size: 17px; font-weight: 800;
-      background: var(--gradient); -webkit-background-clip: text;
-      background-clip: text; color: transparent; letter-spacing: 1.5px; text-transform: uppercase;
-    }
-    .topbar-right { display: flex; align-items: center; gap: 12px; }
-    .user-chip {
-      display: flex; align-items: center; gap: 8px;
-      background: rgba(0,212,255,0.07); border: 1px solid rgba(0,212,255,0.15);
-      padding: 7px 14px; border-radius: 20px; font-size: 13px; color: var(--muted);
-    }
-    .user-chip .dot {
-      width: 8px; height: 8px; background: var(--success); border-radius: 50%;
-      animation: dotPulse 2s ease-in-out infinite;
-    }
-    @keyframes dotPulse {
-      0%,100% { box-shadow: 0 0 0 0 rgba(0,255,136,0.4); }
-      50%      { box-shadow: 0 0 0 6px rgba(0,255,136,0); }
-    }
-    .logout-btn {
-      background: transparent; border: 1px solid rgba(255,68,68,0.4); color: var(--error);
-      padding: 7px 14px; border-radius: 9px; cursor: pointer; font-size: 12px;
-      font-weight: 700; transition: all 0.3s; font-family: 'Tajawal', sans-serif;
-    }
-    .logout-btn:hover { background: rgba(255,68,68,0.12); transform: translateY(-1px); }
-    .new-srv-btn {
-      background: var(--gradient); color: #001a2e; padding: 9px 18px;
-      border-radius: 9px; border: 0; font-weight: 800; cursor: pointer;
-      font-size: 12px; letter-spacing: 0.5px; transition: all 0.3s;
-      position: relative; overflow: hidden;
-    }
-    .new-srv-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,136,255,0.4); }
-    .new-srv-btn::before {
-      content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
-      background: linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent); transition: 0.5s;
-    }
-    .new-srv-btn:hover::before { left: 100%; }
-    
-    /* ===== Support Chat ===== */
-    .support-btn {
-      position: fixed; bottom: 80px; right: 20px; z-index: 999;
-      width: 50px; height: 50px; border-radius: 50%;
-      background: var(--gradient); border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 24px; box-shadow: 0 4px 15px rgba(0,212,255,0.4);
-      transition: all 0.3s; animation: float 3s ease-in-out infinite;
-    }
-    .support-btn:hover { transform: scale(1.1); }
-    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-    
-    .chat-modal {
-      position: fixed; bottom: 80px; right: 20px; z-index: 999;
-      width: 350px; height: 450px; background: var(--card-bg2);
-      border: 1px solid var(--panel-border); border-radius: 12px;
-      display: none; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-    }
-    .chat-header {
-      padding: 14px; border-bottom: 1px solid var(--panel-border);
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .chat-title { color: var(--accent); font-weight: 700; }
-    .chat-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px; }
-    .chat-messages {
-      flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px;
-    }
-    .chat-msg { padding: 8px 12px; border-radius: 8px; font-size: 12px; max-width: 85%; word-wrap: break-word; }
-    .chat-msg.user { background: rgba(0,212,255,0.2); color: var(--accent); align-self: flex-end; }
-    .chat-msg.admin { background: rgba(0,255,136,0.1); color: var(--success); align-self: flex-start; }
-    .chat-input-wrap {
-      padding: 10px; border-top: 1px solid var(--panel-border);
-      display: flex; gap: 8px;
-    }
-    .chat-input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--panel-border);
-      color: #e0ecf5; padding: 8px; border-radius: 6px; font-size: 12px; outline: none; }
-    .chat-send { background: var(--gradient); border: none; color: #001a2e; padding: 8px 12px;
-      border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 12px; }
-    
-    /* ===== Metrics Chart ===== */
-    .metrics-section {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px;
-    }
-    .metric-card {
-      background: var(--card-bg); border: 1px solid var(--panel-border);
-      border-radius: 10px; padding: 16px; position: relative; overflow: hidden;
-    }
-    .metric-card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-      background: var(--gradient);
-    }
-    .metric-title { color: var(--muted); font-size: 12px; font-weight: 600; margin-bottom: 8px; }
-    .metric-value { color: var(--accent); font-size: 24px; font-weight: 800; }
-    .metric-chart { position: relative; height: 200px; margin-top: 12px; }
-    @media (max-width: 768px) { .metrics-section { grid-template-columns: 1fr; } .chat-modal { width: 90%; right: 5%; } }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        
+        /* Header */
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 0; margin-bottom: 30px;
+            border-bottom: 1px solid var(--panel-border);
+        }
+        .logo { font-size: 1.8rem; font-weight: 900; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .logout-btn { padding: 8px 20px; background: rgba(255, 68, 68, 0.1); color: var(--error); border: 1px solid rgba(255, 68, 68, 0.2); border-radius: 8px; cursor: pointer; text-decoration: none; font-weight: 700; }
 
-    /* ===== Main ===== */
-    .main { position: relative; z-index: 1; max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
+        /* Dashboard Grid */
+        .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; }
+        @media (max-width: 900px) { .dashboard-grid { grid-template-columns: 1fr; } }
 
-    /* ===== Home View ===== */
-    #homeView { animation: fadeUp 0.6s ease both; }
-    @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+        .card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .card-title { font-size: 1.2rem; font-weight: 800; color: var(--primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
 
-    .section-header {
-      display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px;
-    }
-    .section-title { font-size: 1.1rem; font-weight: 700; color: var(--accent); }
-    .section-count {
-      background: rgba(0,212,255,0.1); color: var(--accent); padding: 3px 12px;
-      border-radius: 20px; font-size: 12px; font-weight: 700;
-    }
+        /* Metrics */
+        .metrics-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .metric-card { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px; border: 1px solid var(--panel-border); }
+        .metric-label { font-size: 0.8rem; color: var(--muted); margin-bottom: 5px; }
+        .metric-value { font-size: 1.4rem; font-weight: 800; color: var(--primary); }
 
-    /* ===== Server Cards ===== */
-    #cardsContainer {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px;
-    }
-    .srv-card {
-      background: var(--card-bg); border-radius: 16px; padding: 28px 22px;
-      border: 1px solid var(--panel-border); cursor: pointer; text-align: center;
-      transition: all 0.35s; backdrop-filter: blur(8px); position: relative; overflow: hidden;
-      animation: cardIn 0.5s ease both;
-    }
-    @keyframes cardIn { from{opacity:0;transform:translateY(20px)scale(0.95)} to{opacity:1;transform:translateY(0)scale(1)} }
-    .srv-card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-      background: var(--gradient);
-    }
-    .srv-card::after {
-      content: ''; position: absolute; inset: 0;
-      background: radial-gradient(circle at 50% 0%, rgba(0,212,255,0.06) 0%, transparent 60%);
-      pointer-events: none;
-    }
-    .srv-card:hover {
-      transform: translateY(-8px) scale(1.02);
-      border-color: rgba(0,212,255,0.4);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 30px rgba(0,212,255,0.1);
-    }
-    .srv-icon-wrap {
-      width: 52px; height: 52px; margin: 0 auto 16px;
-      background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.2);
-      border-radius: 14px; display: flex; align-items: center; justify-content: center;
-      font-size: 24px; transition: all 0.3s;
-    }
-    .srv-card:hover .srv-icon-wrap { background: rgba(0,212,255,0.2); transform: scale(1.1); }
-    .srv-card-title {
-      font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
-      background: linear-gradient(90deg, #fff, var(--accent-light));
-      -webkit-background-clip: text; background-clip: text; color: transparent;
-      margin-bottom: 6px;
-    }
-    .srv-card-sub { color: var(--muted); font-size: 11px; margin-bottom: 10px; }
-    .srv-card-file {
-      font-size: 10px; color: var(--accent); opacity: 0.7;
-      background: rgba(0,212,255,0.06); padding: 4px 10px; border-radius: 20px;
-      display: inline-block;
-    }
-    .empty-state {
-      grid-column: 1/-1; text-align: center; padding: 60px 20px; color: var(--muted);
-    }
-    .empty-icon { font-size: 56px; margin-bottom: 16px; opacity: 0.5; }
-    .empty-state h3 { color: var(--accent); margin-bottom: 8px; font-size: 1.1rem; }
-    .empty-state p { font-size: 0.9rem; }
+        /* Upload Section */
+        .upload-section { margin-top: 25px; }
+        .upload-box {
+            border: 2px dashed var(--panel-border); border-radius: 15px; padding: 40px;
+            text-align: center; cursor: pointer; transition: 0.3s;
+            background: rgba(0, 212, 255, 0.02);
+        }
+        .upload-box:hover { border-color: var(--primary); background: rgba(0, 212, 255, 0.05); }
+        .upload-icon { font-size: 40px; margin-bottom: 10px; }
 
-    /* ===== Server View ===== */
-    #serverView { display: none; animation: fadeUp 0.5s ease both; }
+        /* Files Table */
+        .files-table-container { margin-top: 20px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: right; }
+        th { padding: 15px; color: var(--muted); font-size: 0.9rem; border-bottom: 1px solid var(--panel-border); }
+        td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .file-name { color: var(--primary); font-weight: 700; cursor: pointer; }
+        .btn-action { padding: 5px 12px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.8rem; font-weight: 700; margin-right: 5px; }
+        .btn-view { background: rgba(0, 212, 255, 0.1); color: var(--primary); }
+        .btn-delete { background: rgba(255, 68, 68, 0.1); color: var(--error); }
 
-    .srv-header-row {
-      display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px;
-    }
-    .srv-name { font-size: 1.4rem; font-weight: 800; color: var(--accent); }
-    .tab-btns { display: flex; gap: 8px; }
-    .tab-btn {
-      padding: 9px 20px; border-radius: 9px; border: 1px solid var(--panel-border);
-      background: rgba(255,255,255,0.04); color: var(--muted); cursor: pointer;
-      font-size: 13px; font-weight: 700; transition: all 0.3s; font-family: 'Inter', sans-serif;
-    }
-    .tab-btn.active {
-      background: var(--gradient); color: #001a2e; border-color: transparent;
-      box-shadow: 0 4px 15px rgba(0,136,255,0.3);
-    }
-    .tab-btn:hover:not(.active) { background: rgba(255,255,255,0.08); color: var(--accent); }
+        /* Chat Widget */
+        .chat-widget { position: fixed; bottom: 30px; left: 30px; z-index: 1000; }
+        .chat-btn { width: 60px; height: 60px; background: var(--gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 10px 25px rgba(0,136,255,0.4); }
+        .chat-window {
+            position: absolute; bottom: 80px; left: 0; width: 350px; height: 450px;
+            background: var(--panel); border: 1px solid var(--panel-border); border-radius: 20px;
+            display: none; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .chat-header { padding: 15px; background: var(--gradient); color: #000; font-weight: 800; display: flex; justify-content: space-between; }
+        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .msg { padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 0.9rem; }
+        .msg.user { align-self: flex-end; background: var(--primary); color: #000; }
+        .msg.admin { align-self: flex-start; background: rgba(255,255,255,0.1); color: #fff; }
+        .chat-input { padding: 15px; border-top: 1px solid var(--panel-border); display: flex; gap: 10px; }
+        .chat-input input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--panel-border); padding: 10px; border-radius: 10px; color: #fff; outline: none; }
 
-    /* ===== Console View ===== */
-    .console-layout { display: grid; grid-template-columns: 1fr 300px; gap: 18px; }
-    @media (max-width: 800px) { .console-layout { grid-template-columns: 1fr; } }
-
-    .console-box {
-      background: rgba(0,0,0,0.85); padding: 18px; height: 520px; overflow-y: auto;
-      font-family: 'Courier New', monospace; border-radius: 14px;
-      border: 1px solid var(--panel-border); font-size: 12.5px; white-space: pre-wrap;
-      color: #9ab5c7; line-height: 1.6; backdrop-filter: blur(5px);
-    }
-    .console-box::-webkit-scrollbar { width: 6px; }
-    .console-box::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 3px; }
-    .console-box::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
-
-    .sidebar { display: flex; flex-direction: column; gap: 12px; }
-
-    .action-btn {
-      width: 100%; padding: 14px; border: 0; border-radius: 11px; font-weight: 800;
-      cursor: pointer; color: white; transition: all 0.3s; font-size: 13px;
-      font-family: 'Tajawal', sans-serif; letter-spacing: 0.5px; position: relative; overflow: hidden;
-    }
-    .action-btn::after {
-      content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
-      background: linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent); transition: 0.5s;
-    }
-    .action-btn:hover::after { left: 100%; }
-    .action-btn:hover { transform: translateY(-2px); }
-    .action-btn.disabled { opacity: 0.4; cursor: not-allowed; }
-    .action-btn.disabled:hover { transform: none; }
-
-    .stat-widget {
-      background: rgba(255,255,255,0.03); padding: 14px 16px; border-radius: 12px;
-      border: 1px solid var(--panel-border); display: flex; align-items: center; gap: 12px;
-      transition: all 0.3s;
-    }
-    .stat-widget:hover { border-color: rgba(0,212,255,0.3); transform: translateX(-3px); }
-    .stat-icon { font-size: 22px; }
-    .stat-info small { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 3px; }
-    .stat-info b { font-size: 14px; font-weight: 700; }
-    .status-running { color: var(--success); animation: statusPulse 2s infinite; }
-    .status-offline { color: var(--error); }
-    @keyframes statusPulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
-
-    /* ===== Files View ===== */
-    #viewFiles { animation: fadeUp 0.4s ease both; }
-
-    .files-header {
-      display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;
-    }
-    .files-title { font-size: 1rem; font-weight: 700; color: var(--accent); }
-    .files-actions { display: flex; gap: 8px; }
-    .file-action-btn {
-      padding: 8px 16px; border-radius: 9px; border: 1px solid var(--panel-border);
-      background: rgba(255,255,255,0.04); color: #ccc; cursor: pointer;
-      font-size: 12px; font-weight: 700; transition: all 0.3s;
-    }
-    .file-action-btn:hover { background: rgba(0,212,255,0.1); color: var(--accent); border-color: rgba(0,212,255,0.3); }
-    .file-action-btn.primary { background: var(--gradient); color: #001a2e; border-color: transparent; }
-    .file-action-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,136,255,0.3); }
-
-    /* ===== Upload Zone ===== */
-    .upload-zone {
-      border: 2px dashed rgba(0,212,255,0.3); border-radius: 14px;
-      padding: 36px 20px; text-align: center; margin-bottom: 20px;
-      cursor: pointer; transition: all 0.3s; background: rgba(0,212,255,0.03);
-      position: relative;
-    }
-    .upload-zone:hover, .upload-zone.dragover {
-      background: rgba(0,212,255,0.08); border-color: rgba(0,212,255,0.6);
-      transform: scale(1.01);
-    }
-    .upload-zone.dragover { box-shadow: 0 0 30px rgba(0,212,255,0.2); }
-    .upload-zone-icon { font-size: 40px; margin-bottom: 12px; }
-    .upload-zone-text { color: var(--muted); font-size: 14px; margin-bottom: 6px; }
-    .upload-zone-hint { font-size: 11px; color: var(--muted); opacity: 0.6; }
-    .file-input-hidden {
-      position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;
-    }
-    .upload-progress { display: none; margin-top: 14px; }
-    .progress-bar {
-      width: 100%; height: 8px; background: rgba(255,255,255,0.08);
-      border-radius: 4px; overflow: hidden; margin-bottom: 8px;
-    }
-    .progress-fill {
-      height: 100%; background: var(--gradient); width: 0%; transition: width 0.4s;
-      border-radius: 4px;
-    }
-    .upload-status { font-size: 13px; color: var(--accent); font-weight: 600; }
-
-    /* ===== Files Table ===== */
-    .files-table { width: 100%; border-collapse: collapse; }
-    .files-table th {
-      background: rgba(0,212,255,0.07); padding: 12px 14px; text-align: right;
-      color: var(--accent); font-weight: 700; font-size: 12px; text-transform: uppercase;
-      letter-spacing: 0.5px; border-bottom: 2px solid rgba(0,212,255,0.2);
-    }
-    .files-table td {
-      padding: 13px 14px; border-bottom: 1px solid rgba(255,255,255,0.04);
-      font-size: 13px; transition: all 0.2s;
-    }
-    .files-table tr:hover td { background: rgba(0,212,255,0.04); }
-    .file-name { color: var(--accent); cursor: pointer; font-weight: 600; }
-    .file-name:hover { color: var(--accent-light); text-decoration: underline; }
-    .f-btn {
-      padding: 5px 11px; border-radius: 7px; border: 0; font-size: 11px;
-      cursor: pointer; margin-left: 5px; font-weight: 700; transition: all 0.2s;
-    }
-    .f-btn:hover { transform: translateY(-1px); }
-    .f-btn.install { background: var(--gradient); color: #001a2e; }
-    .f-btn.rename  { background: rgba(0,212,255,0.15); color: var(--accent); }
-    .f-btn.delete  { background: rgba(255,68,68,0.15); color: var(--error); }
-    .f-btn.set-main { background: rgba(0,255,136,0.15); color: var(--success); }
-
-    /* ===== Editor Modal ===== */
-    #editorModal {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.96); z-index: 3000; padding: 16px;
-      animation: fadeUp 0.3s ease both;
-    }
-    .editor-wrap {
-      height: 100%; display: flex; flex-direction: column;
-      background: #0a0d14; border-radius: 14px; border: 1px solid #1e2535; overflow: hidden;
-    }
-    .editor-header {
-      padding: 14px 18px; border-bottom: 1px solid #1e2535;
-      display: flex; justify-content: space-between; align-items: center;
-      background: #080b12;
-    }
-    .editor-filename { font-weight: 700; color: var(--accent); font-size: 14px; }
-    .editor-actions { display: flex; gap: 8px; }
-    .editor-btn {
-      padding: 7px 16px; border-radius: 8px; border: 0; cursor: pointer;
-      font-size: 12px; font-weight: 700; transition: all 0.2s;
-    }
-    .editor-btn.save { background: var(--gradient); color: #001a2e; }
-    .editor-btn.save:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,136,255,0.3); }
-    .editor-btn.close { background: rgba(255,68,68,0.2); color: var(--error); border: 1px solid rgba(255,68,68,0.3); }
-    .editor-btn.close:hover { background: rgba(255,68,68,0.35); }
-    #edArea {
-      flex: 1; background: #080b12; color: #d0e0ec; padding: 18px;
-      border: none; font-family: 'Courier New', monospace; font-size: 13.5px;
-      outline: none; resize: none; line-height: 1.7; tab-size: 2;
-    }
-    .editor-statusbar {
-      padding: 6px 18px; background: #050810; border-top: 1px solid #1e2535;
-      font-size: 11px; color: var(--muted); display: flex; gap: 20px;
-    }
-
-    /* ===== Confirm Modal ===== */
-    .modal-backdrop {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.8);
-      display: none; align-items: center; justify-content: center; z-index: 2000;
-    }
-    .modal {
-      width: 90%; max-width: 420px; background: #0c1120; border-radius: 16px;
-      padding: 28px; border: 1px solid var(--panel-border);
-      box-shadow: 0 30px 60px rgba(0,0,0,0.6); animation: fadeUp 0.4s ease both;
-    }
-    .modal h3 { color: var(--accent); margin-bottom: 18px; font-size: 1.1rem; }
-    .modal input {
-      width: 100%; padding: 13px 16px; background: rgba(255,255,255,0.05);
-      border: 1px solid var(--panel-border); color: white; border-radius: 10px;
-      font-size: 14px; outline: none; transition: all 0.3s; font-family: 'Tajawal', sans-serif;
-    }
-    .modal input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,212,255,0.1); }
-    .modal-btns { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
-    .modal-btn {
-      padding: 10px 20px; border-radius: 9px; border: 0; cursor: pointer;
-      font-size: 13px; font-weight: 700; transition: all 0.2s; font-family: 'Tajawal', sans-serif;
-    }
-    .modal-btn.cancel { background: rgba(255,255,255,0.07); color: var(--muted); }
-    .modal-btn.cancel:hover { background: rgba(255,255,255,0.12); }
-    .modal-btn.confirm { background: var(--gradient); color: #001a2e; }
-    .modal-btn.confirm:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,136,255,0.3); }
-
-    /* ===== Toast ===== */
-    #toast {
-      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px);
-      background: rgba(10,15,28,0.95); border: 1px solid var(--panel-border); color: #fff;
-      padding: 12px 24px; border-radius: 12px; font-size: 13px; font-weight: 600;
-      z-index: 5000; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
-      backdrop-filter: blur(10px); white-space: nowrap;
-    }
-    #toast.show { transform: translateX(-50%) translateY(0); }
-    #toast.success { border-color: rgba(0,255,136,0.4); color: var(--success); }
-    #toast.error   { border-color: rgba(255,68,68,0.4);  color: var(--error); }
-
-    /* ===== Loading dots ===== */
-    .loading-dots { display: inline-flex; gap: 4px; }
-    .loading-dots span {
-      width: 6px; height: 6px; background: var(--accent); border-radius: 50%;
-      animation: dotBounce 1.4s infinite;
-    }
-    .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
-    .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes dotBounce { 0%,80%,100%{transform:scale(0.6);opacity:0.5} 40%{transform:scale(1);opacity:1} }
-
-    @media (max-width: 600px) {
-      .topbar { padding: 12px 14px; flex-wrap: wrap; gap: 8px; }
-      .main { padding: 18px 14px 40px; }
-    }
-  </style>
+        /* File Viewer Modal */
+        .modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px;
+        }
+        .modal-content {
+            width: 100%; max-width: 900px; height: 80vh; background: #0a0d14;
+            border-radius: 20px; border: 1px solid var(--panel-border);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .modal-header { padding: 20px; border-bottom: 1px solid var(--panel-border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-body { flex: 1; padding: 20px; overflow: auto; }
+        pre { font-family: 'Courier New', monospace; color: #9ab5c7; line-height: 1.6; font-size: 14px; white-space: pre-wrap; }
+    </style>
 </head>
 <body>
-  <canvas id="bgCanvas"></canvas>
-
-  <!-- Topbar -->
-  <header class="topbar">
-    <div class="topbar-left">
-      <button class="home-btn" onclick="goHome()" title="الرئيسية">🏠</button>
-      <div class="panel-logo" id="headerTitle">OMAR BRO HOST</div>
-    </div>
-    <div class="topbar-right">
-      <div class="user-chip">
-        <span class="dot"></span>
-        <span id="usernameDisplay">User</span>
-      </div>
-      <button class="logout-btn" onclick="logout()">تسجيل الخروج</button>
-      <button id="newBtn" class="new-srv-btn">+ إنشاء سيرفر</button>
-    </div>
-  </header>
-
-  <!-- Main -->
-  <main class="main">
-
-    <!-- Home View -->
-    <div id="homeView">
-      <div class="section-header">
-        <div class="section-title">🖥️ سيرفراتي</div>
-        <div class="section-count" id="serversCount">0</div>
-      </div>
-      <div id="cardsContainer"></div>
-    </div>
-
-    <!-- Server View -->
-    <div id="serverView">
-      <div class="srv-header-row">
-        <div class="srv-name" id="srvHeader">SERVER</div>
-        <div class="tab-btns">
-          <button class="tab-btn active" id="tabConsole" onclick="switchTab('console')">⚡ Console</button>
-          <button class="tab-btn" id="tabFiles" onclick="switchTab('files')">📁 File Manager</button>
-        </div>
-      </div>
-
-      <!-- Console Tab -->
-      <div id="viewConsole" class="console-layout">
-        <div class="console-box" id="logOut">
-          <div class="loading-dots"><span></span><span></span><span></span></div>
-          Initializing console...
-        </div>
-        <div class="sidebar">
-          <button id="btnStart" class="action-btn" style="background:var(--gradient)" onclick="srvAction('start')">▶ START</button>
-          <button id="btnRestart" class="action-btn" style="background:rgba(30,40,60,0.9);border:1px solid rgba(0,212,255,0.2)" onclick="srvAction('restart')">🔄 RESTART</button>
-          <button class="action-btn" style="background:rgba(255,68,68,0.15);border:1px solid rgba(255,68,68,0.3);color:var(--error)" onclick="srvAction('stop')">⏹ STOP</button>
-
-          <div class="stat-widget">
-            <div class="stat-icon">⚡</div>
-            <div class="stat-info">
-              <small>STATUS</small>
-              <b id="statusTxt" class="status-offline">Offline</b>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <span>OMAR BRO HOST</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z"/></svg>
             </div>
-          </div>
-          <div class="stat-widget">
-            <div class="stat-icon">🧠</div>
-            <div class="stat-info">
-              <small>RAM USAGE</small>
-              <b id="memTxt">0 MB</b>
+            <div class="user-info">
+                <span id="userNameDisplay">جاري التحميل...</span>
+                <a href="/api/logout" class="logout-btn">خروج</a>
             </div>
-          </div>
-          <div class="stat-widget" style="cursor:pointer" onclick="changeStartup()">
-            <div class="stat-icon">💿</div>
-            <div class="stat-info">
-              <small>MAIN FILE</small>
-              <b id="mainFileTxt" style="color:var(--accent)">Not Set</b>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Main Content -->
+            <div class="main-col">
+                <div class="card">
+                    <div class="card-title">📂 إدارة الملفات والرفع</div>
+                    
+                    <div class="upload-box" onclick="document.getElementById('fileInput').click()">
+                        <div class="upload-icon">☁️</div>
+                        <div class="upload-text">اضغط هنا لرفع ملفاتك (PY, HTML, TXT, JSON)</div>
+                        <input type="file" id="fileInput" style="display: none" multiple onchange="handleUpload(this.files)">
+                    </div>
+
+                    <div class="files-table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>اسم الملف</th>
+                                    <th>الحجم</th>
+                                    <th>التاريخ</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="filesList">
+                                <!-- Files will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-          </div>
-          <div class="stat-widget">
-            <div class="stat-icon">🌐</div>
-            <div class="stat-info">
-              <small>IP ADDRESS</small>
-              <b id="ipTxt">127.0.0.1</b>
+
+            <!-- Sidebar -->
+            <div class="side-col">
+                <div class="card">
+                    <div class="card-title">📊 استهلاك الموارد</div>
+                    <div class="metrics-container">
+                        <div class="metric-card">
+                            <div class="metric-label">المعالج CPU</div>
+                            <div class="metric-value" id="cpuVal">0%</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">الذاكرة RAM</div>
+                            <div class="metric-value" id="ramVal">0%</div>
+                        </div>
+                    </div>
+                    <canvas id="resourceChart" height="150"></canvas>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-title">🛡️ حالة السيرفر</div>
+                    <div style="display: flex; align-items: center; gap: 10px; color: var(--success);">
+                        <span style="width: 10px; height: 10px; background: var(--success); border-radius: 50%; display: inline-block;"></span>
+                        <span>يعمل بكفاءة عالية 24/7</span>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
+    </div>
 
-      <!-- Files Tab -->
-      <div id="viewFiles" style="display:none">
-        <div class="files-header">
-          <div class="files-title">📁 مدير الملفات</div>
-          <div class="files-actions">
-            <button class="file-action-btn primary" onclick="document.getElementById('fileInput').click()">📤 رفع ملف</button>
-            <button class="file-action-btn" onclick="loadFiles()">🔄 تحديث</button>
-          </div>
+    <!-- Chat Widget -->
+    <div class="chat-widget">
+        <div class="chat-window" id="chatWindow">
+            <div class="chat-header">
+                <span>الدعم الفني المباشر 💬</span>
+                <span style="cursor: pointer" onclick="toggleChat()">✖</span>
+            </div>
+            <div class="chat-messages" id="chatMsgs"></div>
+            <div class="chat-input">
+                <input type="text" id="chatInput" placeholder="اكتب رسالتك هنا...">
+                <button class="btn-action btn-view" onclick="sendMsg()">إرسال</button>
+            </div>
         </div>
+        <div class="chat-btn" onclick="toggleChat()">💬</div>
+    </div>
 
-        <!-- Upload Zone -->
-        <div class="upload-zone" id="uploadZone"
-             ondragover="handleDragOver(event)"
-             ondragleave="handleDragLeave(event)"
-             ondrop="handleDrop(event)">
-          <div class="upload-zone-icon">🚀</div>
-          <div class="upload-zone-text">اسحب الملفات هنا أو انقر للاختيار</div>
-          <div class="upload-zone-hint">يدعم ملفات متعددة · يتم الرفع تلقائياً</div>
-          <input type="file" class="file-input-hidden" id="fileInput" multiple onchange="handleFileSelect(this)">
-          <div class="upload-progress" id="uploadProgress">
-            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-            <div class="upload-status" id="uploadStatus">جاري الرفع...</div>
-          </div>
+    <!-- File Viewer Modal -->
+    <div class="modal" id="fileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalFileName" style="color: var(--primary)">اسم الملف</h3>
+                <button class="btn-action btn-delete" onclick="closeModal()">إغلاق</button>
+            </div>
+            <div class="modal-body">
+                <pre id="fileContent">جاري تحميل المحتوى...</pre>
+            </div>
         </div>
-
-        <!-- Files Table -->
-        <table class="files-table">
-          <thead>
-            <tr>
-              <th>اسم الملف</th>
-              <th>الحجم</th>
-              <th>الإجراءات</th>
-            </tr>
-          </thead>
-          <tbody id="serverFileList"></tbody>
-        </table>
-      </div>
     </div>
-  </main>
 
-  <!-- Editor Modal -->
-  <div id="editorModal">
-    <div class="editor-wrap">
-      <div class="editor-header">
-        <span class="editor-filename" id="edTitle">Editing: —</span>
-        <div class="editor-actions">
-          <button class="editor-btn save" onclick="saveFile()">💾 حفظ</button>
-          <button class="editor-btn close" onclick="closeEditor()">✕ إغلاق</button>
-        </div>
-      </div>
-      <textarea id="edArea" spellcheck="false"></textarea>
-      <div class="editor-statusbar">
-        <span id="edLines">Lines: 0</span>
-        <span id="edChars">Chars: 0</span>
-        <span>UTF-8</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Confirm Modal -->
-  <div id="modalBackdrop" class="modal-backdrop">
-    <div class="modal">
-      <h3 id="mTitle">—</h3>
-      <input id="mIn" placeholder="أدخل القيمة...">
-      <div class="modal-btns">
-        <button class="modal-btn cancel" onclick="closeM()">إلغاء</button>
-        <button class="modal-btn confirm" id="mConfirm">تأكيد</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Toast -->
-  <div id="toast"></div>
-
-  <script>
-    /* ===== Canvas BG ===== */
-    const canvas = document.getElementById('bgCanvas');
-    const ctx = canvas.getContext('2d');
-    let W, H, particles = [];
-
-    function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
-
-    class Particle {
-      constructor() { this.reset(); }
-      reset() {
-        this.x = Math.random()*W; this.y = Math.random()*H;
-        this.vx = (Math.random()-0.5)*0.3; this.vy = (Math.random()-0.5)*0.3;
-        this.r = Math.random()*1.2+0.3; this.alpha = Math.random()*0.25+0.05;
-        this.color = ['#00d4ff','#0066ff','#00aaff'][Math.floor(Math.random()*3)];
-      }
-      update() {
-        this.x+=this.vx; this.y+=this.vy;
-        if(this.x<0||this.x>W||this.y<0||this.y>H) this.reset();
-      }
-      draw() {
-        ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
-        ctx.fillStyle=this.color; ctx.globalAlpha=this.alpha; ctx.fill(); ctx.globalAlpha=1;
-      }
-    }
-
-    function initParticles() { particles=[]; for(let i=0;i<100;i++) particles.push(new Particle()); }
-
-    function drawLines() {
-      for(let i=0;i<particles.length;i++) {
-        for(let j=i+1;j<particles.length;j++) {
-          const dx=particles[i].x-particles[j].x, dy=particles[i].y-particles[j].y;
-          const d=Math.sqrt(dx*dx+dy*dy);
-          if(d<90) {
-            ctx.beginPath(); ctx.moveTo(particles[i].x,particles[i].y);
-            ctx.lineTo(particles[j].x,particles[j].y); ctx.strokeStyle='#00d4ff';
-            ctx.globalAlpha=(1-d/90)*0.06; ctx.lineWidth=0.5; ctx.stroke(); ctx.globalAlpha=1;
-          }
-        }
-      }
-    }
-
-    function animate() {
-      ctx.clearRect(0,0,W,H);
-      particles.forEach(p=>{p.update();p.draw()});
-      drawLines(); requestAnimationFrame(animate);
-    }
-
-    resize(); initParticles(); animate();
-    window.addEventListener('resize',()=>{resize();initParticles();});
-
-    /* ===== State ===== */
-    let currentSrv = null, poll = null, isRunning = false, currentFile = null;
-    let currentUsername = '', isUploading = false;
-
-    /* ===== Toast ===== */
-    function showToast(msg, type='') {
-      const t = document.getElementById('toast');
-      t.textContent = msg; t.className = 'show '+(type||'');
-      clearTimeout(t._timer);
-      t._timer = setTimeout(()=>{ t.className=''; },3000);
-    }
-
-    /* ===== Auth ===== */
-    async function checkAuth() {
-      try {
-        const r = await fetch('/api/current_user');
-        const d = await r.json();
-        if(!d.success) { window.location.href='/login'; return; }
-        currentUsername = d.username;
-        document.getElementById('usernameDisplay').textContent = d.username;
-        loadServers();
-      } catch(e) { window.location.href='/login'; }
-    }
-
-    async function logout() {
-      if(!confirm('هل أنت متأكد من تسجيل الخروج؟')) return;
-      const btn = document.querySelector('.logout-btn');
-      btn.textContent = 'جاري الخروج...'; btn.disabled = true;
-      await fetch('/api/logout',{method:'POST'});
-      window.location.href = '/login';
-    }
-
-    /* ===== Servers ===== */
-    async function loadServers() {
-      try {
-        const r = await fetch('/servers');
-        if(r.status===401) { window.location.href='/login'; return; }
-        const d = await r.json();
-        const cont = document.getElementById('cardsContainer');
-        const count = document.getElementById('serversCount');
-        cont.innerHTML = '';
-
-        if(!d.servers||d.servers.length===0) {
-          count.textContent = '0';
-          cont.innerHTML = `
-            <div class="empty-state">
-              <div class="empty-icon">📂</div>
-              <h3>لا توجد سيرفرات</h3>
-              <p>أنشئ سيرفرك الأول باستخدام زر "+ إنشاء سيرفر"</p>
-            </div>`;
-          return;
+    <script>
+        // Toggle Chat
+        function toggleChat() {
+            const win = document.getElementById('chatWindow');
+            win.style.display = win.style.display === 'flex' ? 'none' : 'flex';
+            if(win.style.display === 'flex') loadMsgs();
         }
 
-        count.textContent = d.servers.length;
-        d.servers.forEach((s,i) => {
-          const div = document.createElement('div');
-          div.className = 'srv-card';
-          div.style.animationDelay = i*0.08+'s';
-          div.innerHTML = `
-            <div class="srv-icon-wrap">🖥️</div>
-            <div class="srv-card-title">${s.title}</div>
-            <div class="srv-card-sub">${s.subtitle}</div>
-            <div class="srv-card-file">${s.startup_file ? '⚡ '+s.startup_file : '⭕ No main file'}</div>`;
-          div.onclick = ()=>openServer(s);
-          cont.appendChild(div);
-        });
-      } catch(e) { console.error(e); }
-    }
-
-    function openServer(s) {
-      currentSrv = s;
-      document.getElementById('homeView').style.display = 'none';
-      document.getElementById('newBtn').style.display = 'none';
-      document.getElementById('serverView').style.display = 'block';
-      document.getElementById('srvHeader').textContent = s.title;
-      document.getElementById('mainFileTxt').textContent = s.startup_file || 'Click to set';
-      switchTab('console');
-    }
-
-    function goHome() {
-      document.getElementById('homeView').style.display = 'block';
-      document.getElementById('newBtn').style.display = 'block';
-      document.getElementById('serverView').style.display = 'none';
-      clearInterval(poll); loadServers();
-    }
-
-    /* ===== Tabs ===== */
-    function switchTab(t) {
-      document.getElementById('viewConsole').style.display = t==='console' ? 'grid' : 'none';
-      document.getElementById('viewFiles').style.display   = t==='files'   ? 'block' : 'none';
-      document.getElementById('tabConsole').className = 'tab-btn'+(t==='console'?' active':'');
-      document.getElementById('tabFiles').className   = 'tab-btn'+(t==='files'  ?' active':'');
-      if(t==='console') startPolling(); else { clearInterval(poll); loadFiles(); }
-    }
-
-    /* ===== Console Polling ===== */
-    async function startPolling() {
-      if(poll) clearInterval(poll);
-      const fn = async () => {
-        try {
-          const r = await fetch(`/server/stats/${currentSrv.folder}`);
-          if(r.status===401) { window.location.href='/login'; return; }
-          const d = await r.json();
-          const lo = document.getElementById('logOut');
-          lo.textContent = d.logs || 'Waiting for output...';
-          document.getElementById('statusTxt').textContent = d.status;
-          document.getElementById('memTxt').textContent = d.mem;
-          document.getElementById('ipTxt').textContent = d.ip||'127.0.0.1';
-          isRunning = d.status==='Running';
-          const btnStart = document.getElementById('btnStart');
-          const statusEl = document.getElementById('statusTxt');
-          if(isRunning) {
-            btnStart.className='action-btn disabled'; btnStart.disabled=true;
-            btnStart.style.background='rgba(0,255,136,0.15)'; btnStart.style.color='var(--success)';
-            statusEl.className='status-running';
-          } else {
-            btnStart.className='action-btn'; btnStart.disabled=false;
-            btnStart.style.background='var(--gradient)'; btnStart.style.color='#001a2e';
-            statusEl.className='status-offline';
-          }
-          lo.scrollTop = lo.scrollHeight;
-        } catch(e) {}
-      };
-      fn(); poll = setInterval(fn,2000);
-    }
-
-    /* ===== Server Actions ===== */
-    async function srvAction(act) {
-      if(act==='start'&&isRunning) return;
-      const btn = document.querySelector(`button[onclick="srvAction('${act}')"]`);
-      const orig = btn.innerHTML;
-      btn.innerHTML = '<span class="loading-dots"><span></span><span></span><span></span></span>';
-      btn.disabled = true;
-      try {
-        const r = await fetch(`/server/action/${currentSrv.folder}/${act}`,{method:'POST'});
-        if(r.status===401) { window.location.href='/login'; return; }
-        showToast(act==='start'?'✅ تم تشغيل السيرفر':act==='stop'?'⏹ تم إيقاف السيرفر':'🔄 تم إعادة التشغيل','success');
-      } catch(e) { showToast('⚠️ خطأ في تنفيذ الأمر','error'); }
-      finally { setTimeout(()=>{btn.innerHTML=orig;btn.disabled=false;},1000); }
-    }
-
-    /* ===== Files ===== */
-    async function loadFiles() {
-      try {
-        const r = await fetch(`/files/list/${currentSrv.folder}`);
-        if(r.status===401) { window.location.href='/login'; return; }
-        const files = await r.json();
-        const tbody = document.getElementById('serverFileList');
-        if(files.length===0) {
-          tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:30px;color:var(--muted)">لا توجد ملفات</td></tr>';
-          return;
+        // Load Files
+        async function loadFiles() {
+            const res = await fetch('/api/files/list');
+            const data = await res.json();
+            const tbody = document.getElementById('filesList');
+            tbody.innerHTML = data.files.map(f => `
+                <tr>
+                    <td class="file-name" onclick="viewFile('${f.name}')">${f.name}</td>
+                    <td>${f.size}</td>
+                    <td>${f.time}</td>
+                    <td>
+                        <button class="btn-action btn-view" onclick="viewFile('${f.name}')">قراءة</button>
+                        <button class="btn-action btn-delete" onclick="deleteFile('${f.name}')">حذف</button>
+                    </td>
+                </tr>
+            `).join('');
         }
-        tbody.innerHTML = files.map(f => `
-          <tr>
-            <td><span class="file-name" onclick="openEditor('${f.name}')">📄 ${f.name}</span></td>
-            <td style="color:var(--muted)">${f.size}</td>
-            <td>
-              ${f.name==='requirements.txt'?`<button class="f-btn install" onclick="installReq()">📦 Install</button>`:''}
-              <button class="f-btn set-main" onclick="setAsMain('${f.name}')">⭐ Main</button>
-              <button class="f-btn rename" onclick="renameF('${f.name}')">✏️ Rename</button>
-              <button class="f-btn delete" onclick="deleteF('${f.name}')">🗑️ Delete</button>
-            </td>
-          </tr>`).join('');
-      } catch(e) { console.error(e); }
-    }
 
-    async function installReq() {
-      await fetch(`/files/install/${currentSrv.folder}`,{method:'POST'});
-      showToast('📦 جاري تثبيت المكتبات...','');
-      switchTab('console');
-    }
-
-    async function setAsMain(name) {
-      await fetch(`/server/set-startup/${currentSrv.folder}`,{
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({file:name})
-      });
-      currentSrv.startup_file = name;
-      document.getElementById('mainFileTxt').textContent = name;
-      showToast(`✅ تم تعيين "${name}" كملف رئيسي`,'success');
-    }
-
-    /* ===== Editor ===== */
-    async function openEditor(name) {
-      currentFile = name;
-      document.getElementById('edTitle').textContent = 'Editing: '+name;
-      try {
-        const res = await fetch(`/files/content/${currentSrv.folder}/${name}`);
-        const data = await res.json();
-        const area = document.getElementById('edArea');
-        area.value = data.content;
-        updateEditorStats();
-        document.getElementById('editorModal').style.display = 'block';
-        area.focus();
-      } catch(e) { showToast('❌ خطأ في فتح الملف','error'); }
-    }
-
-    async function saveFile() {
-      try {
-        await fetch(`/files/save/${currentSrv.folder}/${currentFile}`,{
-          method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({content:document.getElementById('edArea').value})
-        });
-        showToast('💾 تم حفظ الملف بنجاح','success');
-      } catch(e) { showToast('❌ خطأ في الحفظ','error'); }
-    }
-
-    function closeEditor() { document.getElementById('editorModal').style.display='none'; }
-
-    function updateEditorStats() {
-      const val = document.getElementById('edArea').value;
-      document.getElementById('edLines').textContent = 'Lines: '+(val.split('\n').length);
-      document.getElementById('edChars').textContent = 'Chars: '+val.length;
-    }
-
-    document.addEventListener('DOMContentLoaded',()=>{
-      document.getElementById('edArea').addEventListener('input', updateEditorStats);
-    });
-
-    /* ===== Upload ===== */
-    function handleDragOver(e) {
-      e.preventDefault(); e.stopPropagation();
-      document.getElementById('uploadZone').classList.add('dragover');
-    }
-    function handleDragLeave(e) {
-      e.preventDefault(); e.stopPropagation();
-      document.getElementById('uploadZone').classList.remove('dragover');
-    }
-    function handleDrop(e) {
-      e.preventDefault(); e.stopPropagation();
-      document.getElementById('uploadZone').classList.remove('dragover');
-      if(e.dataTransfer.files.length>0) uploadFiles(Array.from(e.dataTransfer.files));
-    }
-    function handleFileSelect(input) {
-      if(input.files.length>0) uploadFiles(Array.from(input.files));
-    }
-
-    async function uploadFiles(files) {
-      if(files.length===0||isUploading) return;
-      isUploading = true;
-      const zone = document.getElementById('uploadZone');
-      const prog = document.getElementById('uploadProgress');
-      const fill = document.getElementById('progressFill');
-      const status = document.getElementById('uploadStatus');
-      zone.style.opacity='0.7'; prog.style.display='block';
-      fill.style.width='0%'; status.textContent=`جاري رفع ${files.length} ملف...`;
-      try {
-        const fd = new FormData();
-        files.forEach(f=>fd.append('files[]',f));
-        const res = await fetch(`/files/upload/${currentSrv.folder}`,{method:'POST',body:fd});
-        fill.style.width='100%'; status.textContent='جاري المعالجة...';
-        const result = await res.json();
-        if(result.success) {
-          status.textContent=`✅ تم رفع ${result.uploaded_files.length} ملف`;
-          showToast(`✅ تم رفع ${result.uploaded_files.length} ملف بنجاح`,'success');
-          setTimeout(()=>{loadFiles();resetUpload();},1000);
-        } else {
-          status.textContent='❌ فشل الرفع'; showToast('❌ فشل رفع الملفات','error');
-          setTimeout(resetUpload,2000);
+        // View File
+        async function viewFile(name) {
+            document.getElementById('modalFileName').textContent = name;
+            document.getElementById('fileContent').textContent = 'جاري التحميل...';
+            document.getElementById('fileModal').style.display = 'flex';
+            
+            const res = await fetch('/api/files/read', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({filename: name})
+            });
+            const data = await res.json();
+            document.getElementById('fileContent').textContent = data.content || data.error;
         }
-      } catch(e) {
-        status.textContent='❌ خطأ في الرفع'; showToast('❌ خطأ في الرفع','error');
-        setTimeout(resetUpload,2000);
-      } finally { isUploading=false; }
-    }
 
-    function resetUpload() {
-      document.getElementById('uploadZone').style.opacity='1';
-      document.getElementById('uploadProgress').style.display='none';
-      document.getElementById('fileInput').value='';
-    }
+        function closeModal() { document.getElementById('fileModal').style.display = 'none'; }
 
-    /* ===== Modal ===== */
-    function changeStartup() {
-      openM('تعيين الملف الرئيسي', currentSrv.startup_file||'', async v=>{
-        await fetch(`/server/set-startup/${currentSrv.folder}`,{
-          method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({file:v})
-        });
-        currentSrv.startup_file=v;
-        document.getElementById('mainFileTxt').textContent=v;
-        showToast('✅ تم تعيين الملف الرئيسي','success');
-        closeM();
-      });
-    }
-
-    function renameF(old) {
-      openM('إعادة تسمية الملف', old, async v=>{
-        await fetch(`/files/rename/${currentSrv.folder}`,{
-          method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({old,new:v})
-        });
-        showToast('✅ تم إعادة التسمية','success');
-        loadFiles(); closeM();
-      });
-    }
-
-    async function deleteF(name) {
-      if(!confirm(`⚠️ حذف "${name}"؟ لا يمكن التراجع!`)) return;
-      await fetch(`/files/delete/${currentSrv.folder}`,{
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({name})
-      });
-      showToast(`🗑️ تم حذف "${name}"`,'');
-      loadFiles();
-    }
-
-    function openM(t, v, cb) {
-      document.getElementById('modalBackdrop').style.display='flex';
-      document.getElementById('mTitle').textContent=t;
-      document.getElementById('mIn').value=v;
-      document.getElementById('mConfirm').onclick=()=>cb(document.getElementById('mIn').value);
-    }
-    function closeM() { document.getElementById('modalBackdrop').style.display='none'; }
-
-    /* ===== Support Chat Functions ===== */
-    let chatOpen = false;
-    function toggleChat() {
-      const modal = document.getElementById('chatModal');
-      chatOpen = !chatOpen;
-      modal.style.display = chatOpen ? 'flex' : 'none';
-      if(chatOpen) loadChatMessages();
-    }
-    async function loadChatMessages() {
-      try {
-        const res = await fetch('/api/support/messages');
-        const data = await res.json();
-        const msgBox = document.getElementById('chatMessages');
-        msgBox.innerHTML = data.messages.map(m => `
-          <div class="chat-msg ${m.sender === 'ADMIN' ? 'admin' : 'user'}">${m.message}</div>
-        `).join('');
-        msgBox.scrollTop = msgBox.scrollHeight;
-      } catch(e) {}
-    }
-    async function sendChatMessage() {
-      const input = document.getElementById('chatInput');
-      const msg = input.value.trim();
-      if(!msg) return;
-      try {
-        await fetch('/api/support/send', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({message: msg})
-        });
-        input.value = '';
-        loadChatMessages();
-      } catch(e) {}
-    }
-    
-    /* ===== System Metrics ===== */
-    let cpuChart, memChart;
-    async function loadSystemMetrics() {
-      try {
-        const res = await fetch('/api/system/metrics');
-        const data = await res.json();
-        document.getElementById('cpuValue').textContent = data.cpu.toFixed(1) + '%';
-        document.getElementById('memValue').textContent = data.memory.toFixed(1) + '%';
-        document.getElementById('diskValue').textContent = data.disk.toFixed(1) + '%';
-        updateCharts(data);
-      } catch(e) {}
-    }
-    function updateCharts(data) {
-      if(!cpuChart) initCharts();
-      cpuChart.data.labels.push(new Date().toLocaleTimeString('ar-SA'));
-      cpuChart.data.datasets[0].data.push(data.cpu);
-      if(cpuChart.data.labels.length > 10) {
-        cpuChart.data.labels.shift();
-        cpuChart.data.datasets[0].data.shift();
-      }
-      cpuChart.update();
-      
-      memChart.data.labels.push(new Date().toLocaleTimeString('ar-SA'));
-      memChart.data.datasets[0].data.push(data.memory);
-      if(memChart.data.labels.length > 10) {
-        memChart.data.labels.shift();
-        memChart.data.datasets[0].data.shift();
-      }
-      memChart.update();
-    }
-    function initCharts() {
-      const cpuCtx = document.getElementById('cpuChart')?.getContext('2d');
-      const memCtx = document.getElementById('memChart')?.getContext('2d');
-      if(!cpuCtx || !memCtx) return;
-      
-      cpuChart = new Chart(cpuCtx, {
-        type: 'line',
-        data: {
-          labels: [],
-          datasets: [{
-            label: 'CPU %',
-            data: [],
-            borderColor: '#00d4ff',
-            backgroundColor: 'rgba(0,212,255,0.1)',
-            tension: 0.3,
-            fill: true
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: { beginAtZero: true, max: 100, ticks: { color: '#7a8a9a' }, grid: { color: 'rgba(0,212,255,0.1)' } },
-            x: { ticks: { color: '#7a8a9a' }, grid: { display: false } }
-          }
+        // Metrics Update
+        async function updateMetrics() {
+            const res = await fetch('/api/system/metrics');
+            const data = await res.json();
+            document.getElementById('cpuVal').textContent = data.cpu + '%';
+            document.getElementById('ramVal').textContent = data.memory + '%';
         }
-      });
-      
-      memChart = new Chart(memCtx, {
-        type: 'line',
-        data: {
-          labels: [],
-          datasets: [{
-            label: 'Memory %',
-            data: [],
-            borderColor: '#00ff88',
-            backgroundColor: 'rgba(0,255,136,0.1)',
-            tension: 0.3,
-            fill: true
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: { beginAtZero: true, max: 100, ticks: { color: '#7a8a9a' }, grid: { color: 'rgba(0,255,136,0.1)' } },
-            x: { ticks: { color: '#7a8a9a' }, grid: { display: false } }
-          }
-        }
-      });
-    }
-    
-    /* ===== Init ===== */
-    document.addEventListener('DOMContentLoaded', ()=>{
-      checkAuth();
-      loadSystemMetrics();
-      setInterval(loadSystemMetrics, 5000);
-      document.getElementById('newBtn').onclick = ()=>{
-        openM('اسم السيرفر الجديد','',async name=>{
-          if(!name.trim()) { showToast('⚠️ اسم السيرفر لا يمكن أن يكون فارغاً','error'); return; }
-          const btn=document.getElementById('newBtn');
-          const orig=btn.innerHTML; btn.innerHTML='جاري الإنشاء...'; btn.disabled=true;
-          try {
-            await fetch('/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name})});
-            showToast('✅ تم إنشاء السيرفر بنجاح','success');
-            loadServers();
-          } catch(e) { showToast('❌ خطأ في الإنشاء','error'); }
-          finally { btn.innerHTML=orig; btn.disabled=false; closeM(); }
-        });
-      };
-    });
 
-    document.addEventListener('keydown', e=>{
-      if(e.key==='Escape') { closeEditor(); closeM(); if(chatOpen) toggleChat(); }
-      if((e.ctrlKey||e.metaKey)&&e.key==='s') {
-        e.preventDefault();
-        if(document.getElementById('editorModal').style.display==='block') saveFile();
-      }
-    });
-  </script>
-  <!-- Support Chat Button -->
-  <button class="support-btn" onclick="toggleChat()" title="الدعم الفني">💬</button>
-  
-  <!-- Chat Modal -->
-  <div class="chat-modal" id="chatModal">
-    <div class="chat-header">
-      <span class="chat-title">💬 الدعم الفني</span>
-      <button class="chat-close" onclick="toggleChat()">✕</button>
-    </div>
-    <div class="chat-messages" id="chatMessages"></div>
-    <div class="chat-input-wrap">
-      <input type="text" class="chat-input" id="chatInput" placeholder="اكتب رسالتك..." />
-      <button class="chat-send" onclick="sendChatMessage()">إرسال</button>
-    </div>
-  </div>
-  
-  <!-- System Metrics Section (Hidden by default, shown in home view) -->
-  <div class="metrics-section" id="metricsSection" style="display: none;">
-    <div class="metric-card">
-      <div class="metric-title">⚙️ استهلاك المعالج (CPU)</div>
-      <div class="metric-value" id="cpuValue">0%</div>
-      <div class="metric-chart"><canvas id="cpuChart"></canvas></div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-title">🧠 استهلاك الذاكرة (RAM)</div>
-      <div class="metric-value" id="memValue">0%</div>
-      <div class="metric-chart"><canvas id="memChart"></canvas></div>
-    </div>
-  </div>
-  
-  <footer style="position: fixed; bottom: 0; left: 0; right: 0; text-align: center; padding: 12px; background: rgba(5,6,10,0.95); border-top: 1px solid rgba(0,212,255,0.2); color: #7a8a9a; font-size: 0.85rem; z-index: 500;">
-    <span style="color: #00d4ff; font-weight: 700;">OMAR 2026©</span> — مطور بواسطة <span style="color: #00d4ff;">OMAR</span> · آمن ومشفر
-  </footer>
+        setInterval(updateMetrics, 5000);
+        updateMetrics();
+        loadFiles();
+        
+        // Get User Info
+        fetch('/api/user/info').then(r => r.json()).then(data => {
+            document.getElementById('userNameDisplay').textContent = 'مرحباً، ' + data.username;
+        });
+    </script>
 </body>
 </html>
