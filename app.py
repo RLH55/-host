@@ -31,19 +31,25 @@ BOTS_CONFIG_FILE = os.path.join(BASE_DIR, "bots_config.json")
 PIDS_FILE = os.path.join(BASE_DIR, "pids.json")
 
 # الحساب الرئيسي (المسؤول)
-ADMIN_USERNAME = "BRO1983"
-ADMIN_PASSWORD = "OMAROMAR19830"
+ADMIN_USERNAME = "OMAR_ADMIN"
+ADMIN_PASSWORD = "OMAR_2026_BRO"
 
 # ============== Keep-Alive System ==============
 
 def keep_alive_ping():
-    """نظام Keep-Alive - يمنع الموقع من الدخول في وضع النوم"""
+    """نظام Keep-Alive صامت - يمنع الموقع من الدخول في وضع النوم دون إزعاج المستخدم"""
     while True:
         try:
-            time.sleep(600)  # كل 10 دقائق
-            # ping نفسه لإبقاء السيرفر يقظاً
-            own_url = os.environ.get("RENDER_EXTERNAL_URL", "http://localhost:21910")
-            requests.get(f"{own_url}/api/ping", timeout=10)
+            # الانتظار لمدة 10 دقائق
+            time.sleep(600)
+            
+            # محاولة الحصول على رابط الموقع من البيئة أو استخدام localhost
+            # نستخدم الرأس 'User-Agent' لتعريف الطلب كطلب نظام داخلي
+            own_url = os.environ.get("RENDER_EXTERNAL_URL")
+            if own_url:
+                if not own_url.startswith("http"):
+                    own_url = f"https://{own_url}"
+                requests.get(f"{own_url}/api/ping", headers={"User-Agent": "Internal-Keep-Alive"}, timeout=10)
         except Exception:
             pass
 
