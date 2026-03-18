@@ -807,11 +807,23 @@ def get_all_users():
     user_list = []
     for username, data in users.items():
         if username != ADMIN_USERNAME:
+            # حساب عدد الملفات لكل مستخدم
+            user_dir = os.path.join(USERS_DIR, username)
+            file_count = 0
+            if os.path.exists(user_dir):
+                user_servers_dir = os.path.join(user_dir, "SERVERS")
+                if os.path.exists(user_servers_dir):
+                    for folder in os.listdir(user_servers_dir):
+                        folder_path = os.path.join(user_servers_dir, folder)
+                        if os.path.isdir(folder_path):
+                            file_count += len([f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))])
+            
             user_list.append({
                 "username": username,
                 "created_at": data.get("created_at"),
                 "last_login": data.get("last_login"),
-                "created_by": data.get("created_by", "system")
+                "created_by": data.get("created_by", "system"),
+                "file_count": file_count
             })
     return jsonify({"success": True, "users": user_list})
 
@@ -982,6 +994,60 @@ def proxy(port, path):
         return jsonify({"error": "Connection refused"}), 503
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/admin/stats', methods=['GET'])
+def get_admin_stats():
+    if 'username' not in session or not is_admin(session['username']):
+        return jsonify({"error": "غير مصرح"}), 403
+    
+    with open(USERS_FILE, "r", encoding="utf-8") as f:
+        users = json.load(f)
+    
+    total_files = 0
+    for username in users:
+        user_dir = os.path.join(USERS_DIR, username)
+        if os.path.exists(user_dir):
+            # حساب الملفات في مجلدات السيرفرات لكل مستخدم
+            user_servers_dir = os.path.join(user_dir, "SERVERS")
+            if os.path.exists(user_servers_dir):
+                for folder in os.listdir(user_servers_dir):
+                    folder_path = os.path.join(user_servers_dir, folder)
+                    if os.path.isdir(folder_path):
+                        total_files += len([f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))])
+            
+    active_bots = 0
+    config = load_bots_config()
+    for bot_name, bot_info in config.items():
+        if bot_name in TELEGRAM_BOTS:
+            proc = TELEGRAM_BOTS[bot_name].get("process")
+            if proc and proc.poll() is None:
+                active_bots += 1
+            
+    return jsonify({
+        "total_users": len(users),
+        "total_files": total_files,
+        "active_bots": active_bots,
+        "server_uptime": str(timedelta(seconds=int(time.time() - psutil.boot_time())))
+    })
+
+@app.route('/api/admin/logs', methods=['GET'])
+def get_admin_logs():
+    if 'username' not in session or not is_admin(session['username']):
+        return jsonify({"error": "غير مصرح"}), 403
+    
+    log_files = [f for f in os.listdir(BASE_DIR) if f.endswith('.log')]
+    logs_data = {}
+    
+    for log_file in log_files:
+        path = os.path.join(BASE_DIR, log_file)
+        try:
+            with open(path, "r", encoding="utf-8", errors="replace") as f:
+                lines = f.readlines()
+                logs_data[log_file] = "".join(lines[-100:])
+        except:
+            logs_data[log_file] = "تعذر قراءة الملف"
+            
+    return jsonify(logs_data)
 
 # ============== Startup ==============
 

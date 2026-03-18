@@ -97,8 +97,19 @@
 
     /* ===== Stats Row ===== */
     .stats-row {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;
       margin-bottom: 30px; animation: fadeUp 0.8s ease both;
+    }
+    .log-container {
+      background: #000; color: #0f0; font-family: monospace; padding: 15px;
+      border-radius: 10px; height: 300px; overflow-y: auto; font-size: 12px;
+      border: 1px solid var(--gold); margin-top: 15px;
+    }
+    .log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .log-title { color: var(--gold); font-weight: bold; }
+    .btn-view-files {
+      background: var(--blue-gradient); color: #fff; border: none; padding: 5px 10px;
+      border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold;
     }
     .stat-box {
       background: var(--bg-card); border-radius: 16px; padding: 22px 20px;
@@ -328,22 +339,37 @@
       <div class="stat-box">
         <div class="stat-icon">👥</div>
         <div class="stat-num" id="statTotal">0</div>
-        <div class="stat-lbl">إجمالي المستخدمين</div>
+        <div class="stat-lbl">إجمالي الحسابات</div>
       </div>
       <div class="stat-box">
-        <div class="stat-icon">🟢</div>
-        <div class="stat-num" id="statActive">0</div>
-        <div class="stat-lbl">نشطين (30 يوم)</div>
+        <div class="stat-icon">📁</div>
+        <div class="stat-num" id="statFiles">0</div>
+        <div class="stat-lbl">ملفات مرفوعة</div>
       </div>
       <div class="stat-box">
-        <div class="stat-icon">📅</div>
+        <div class="stat-icon">🤖</div>
+        <div class="stat-num" id="statBots">0</div>
+        <div class="stat-lbl">بوتات شغالة</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-icon">🆕</div>
         <div class="stat-num" id="statToday">0</div>
-        <div class="stat-lbl">أُنشئوا اليوم</div>
+        <div class="stat-lbl">حسابات اليوم</div>
       </div>
       <div class="stat-box">
-        <div class="stat-icon">🖥️</div>
-        <div class="stat-num" id="statServers">0</div>
-        <div class="stat-lbl">إجمالي السيرفرات</div>
+        <div class="stat-icon">⏱️</div>
+        <div class="stat-num" id="statUptime">0</div>
+        <div class="stat-lbl">وقت التشغيل</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 24px;">
+      <div class="card-header">
+        <div class="card-title">📋 لوحة قراءة السجلات (Logs)</div>
+        <button class="btn-secondary" style="width: auto; margin: 0; padding: 5px 15px;" onclick="loadLogs()">تحديث السجلات</button>
+      </div>
+      <div id="logsWrapper">
+        <div class="log-container" id="adminLogs">جاري تحميل السجلات...</div>
       </div>
     </div>
 
@@ -580,8 +606,10 @@
               <div class="user-info-col">
                 <div class="user-name">${u.username}</div>
                 <div class="user-meta">أُنشئ: ${created} · آخر دخول: ${lastLogin}</div>
+                <div class="user-meta" style="color: var(--gold);">الملفات: ${u.file_count || 0}</div>
               </div>
-              <div class="user-actions">
+              <div class="user-actions" style="display: flex; gap: 8px;">
+                <button class="btn-view-files" onclick="viewUserFiles('${u.username}')">📂 ملفات المستخدم</button>
                 <button class="btn-delete" onclick="deleteUser('${u.username}')">🗑️ حذف</button>
               </div>
             </div>`;
@@ -594,24 +622,44 @@
     /* ===== Load Stats ===== */
     async function loadStats() {
       try {
-        const res = await fetch('/api/admin/users');
+        const res = await fetch('/api/admin/stats');
         const data = await res.json();
-        if(!data.success) return;
-        const total = data.users.length;
-        const today = new Date().toLocaleDateString('ar-SA');
-        const active = data.users.filter(u=>{
-          if(!u.last_login) return false;
-          const d=new Date(u.last_login), ago=new Date(); ago.setDate(ago.getDate()-30);
-          return d>ago;
-        }).length;
-        const todayCount = data.users.filter(u=>{
-          return u.created_at && new Date(u.created_at).toLocaleDateString('ar-SA')===today;
-        }).length;
-        document.getElementById('statTotal').textContent = total;
-        document.getElementById('statActive').textContent = active;
-        document.getElementById('statToday').textContent = todayCount;
-        document.getElementById('sysUsers').textContent = total;
+        document.getElementById('statTotal').textContent = data.total_users;
+        document.getElementById('statFiles').textContent = data.total_files;
+        document.getElementById('statBots').textContent = data.active_bots;
+        document.getElementById('statUptime').textContent = data.server_uptime.split('.')[0];
+        
+        const resUsers = await fetch('/api/admin/users');
+        const dataUsers = await resUsers.json();
+        if(dataUsers.success) {
+          const today = new Date().toLocaleDateString('ar-SA');
+          const todayCount = dataUsers.users.filter(u=>{
+            return u.created_at && new Date(u.created_at).toLocaleDateString('ar-SA')===today;
+          }).length;
+          document.getElementById('statToday').textContent = todayCount;
+        }
       } catch(e) {}
+    }
+
+    async function loadLogs() {
+      const logBox = document.getElementById('adminLogs');
+      try {
+        const res = await fetch('/api/admin/logs');
+        const data = await res.json();
+        let html = '';
+        for(const [file, content] of Object.entries(data)) {
+          html += `<div class="log-header"><span class="log-title">${file}</span></div>`;
+          html += `<pre style="white-space: pre-wrap; margin-bottom: 20px;">${content || 'لا توجد سجلات'}</pre>`;
+        }
+        logBox.innerHTML = html || 'لا توجد ملفات سجلات حالياً';
+      } catch(e) {
+        logBox.innerHTML = 'خطأ في تحميل السجلات';
+      }
+    }
+
+    function viewUserFiles(username) {
+      alert('سيتم توجيهك لمشاهدة ملفات المستخدم: ' + username + '\n(هذه الميزة تتطلب صلاحيات وصول للمجلدات)');
+      // يمكن إضافة توجيه لصفحة الملفات مع فلتر للمستخدم مستقبلاً
     }
 
     /* ===== Delete User ===== */
@@ -653,7 +701,11 @@
     });
 
     /* ===== Init ===== */
-    document.addEventListener('DOMContentLoaded', checkAdminAuth);
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAdminAuth();
+      loadLogs();
+      setInterval(loadLogs, 30000); // تحديث السجلات كل 30 ثانية
+    });
   </script>
   <footer style="position: fixed; bottom: 0; left: 0; right: 0; text-align: center; padding: 14px; background: rgba(5,6,10,0.95); border-top: 2px solid rgba(255,215,0,0.3); color: #8899aa; font-size: 0.85rem; z-index: 500;">
     <span style="color: #FFD700; font-weight: 700;">OMAR 2026©</span> — مطور بواسطة <span style="color: #FFD700;">OMAR</span> · آمن ومشفر
