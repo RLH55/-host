@@ -1,0 +1,10 @@
+{
+  "OMAR_ADMIN": {
+    "password": "a9b5e1603097f3f09386605daee7ca01eb700e493c2d6138cb419f6c6e2bbd20",
+    "created_at": "2026-03-18T00:00:00",
+    "last_login": null,
+    "theme": "premium",
+    "is_admin": true,
+    "can_create_users": true
+  }
+}
