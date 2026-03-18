@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OMAR BRO HOST — تسجيل الدخول</title>
+  <title>OMAR BRO HOST — استضافة المستقبل</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
   <style>
@@ -16,400 +16,317 @@
       --gradient: linear-gradient(135deg, #00d4ff 0%, #0066ff 50%, #00d4ff 100%);
       --gold-gradient: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%);
       --bg: #05060a;
-      --bg-card: rgba(5, 10, 22, 0.97);
+      --bg-card: rgba(12, 17, 29, 0.95);
       --text: #ffffff;
       --text-muted: #8899aa;
       --success: #00ff88;
       --error: #ff4444;
-      --border: rgba(0, 212, 255, 0.25);
+      --border: rgba(0, 212, 255, 0.15);
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
     body {
       font-family: 'Tajawal', sans-serif;
       background: var(--bg);
       color: var(--text);
-      min-height: 100vh;
       overflow-x: hidden;
-      position: relative;
+      line-height: 1.6;
     }
     #bgCanvas {
       position: fixed; top: 0; left: 0;
       width: 100%; height: 100%;
-      z-index: 0; pointer-events: none;
+      z-index: -1; pointer-events: none;
     }
-    .stars-layer {
-      position: fixed; top: 0; left: 0;
-      width: 100%; height: 100%;
-      z-index: 0; pointer-events: none; overflow: hidden;
+
+    /* ===== Hero Section ===== */
+    .hero {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+      position: relative;
     }
-    .star {
-      position: absolute; width: 2px; height: 2px;
-      background: white; border-radius: 50%;
-      animation: twinkle var(--dur) ease-in-out infinite; opacity: 0;
+    .hero-brand { margin-bottom: 30px; animation: fadeInDown 1s ease; }
+    .hero-logo {
+      width: 120px; height: 120px; border-radius: 30px;
+      box-shadow: 0 0 50px rgba(0,212,255,0.5);
+      margin-bottom: 20px; border: 2px solid var(--primary);
     }
-    @keyframes twinkle {
-      0%, 100% { opacity: 0; transform: scale(0.5); }
-      50% { opacity: var(--op); transform: scale(1.2); }
+    .hero-title {
+      font-size: 3.5rem; font-weight: 900;
+      background: var(--gradient); -webkit-background-clip: text;
+      background-clip: text; color: transparent;
+      margin-bottom: 10px; letter-spacing: 2px;
     }
-    .login-wrapper {
-      position: relative; z-index: 10;
-      display: flex; justify-content: center; align-items: center;
-      min-height: 100vh; padding: 20px;
+    .hero-subtitle { font-size: 1.2rem; color: var(--text-muted); max-width: 600px; }
+    .scroll-down {
+      position: absolute; bottom: 30px;
+      animation: bounce 2s infinite;
+      cursor: pointer; color: var(--primary); font-size: 24px;
     }
-    .login-box {
-      width: 100%; max-width: 620px;
-      animation: boxAppear 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-      padding: 0 15px;
+    @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-10px);} 60% {transform: translateY(-5px);} }
+
+    /* ===== Features Section ===== */
+    .section { padding: 100px 20px; max-width: 1200px; margin: 0 auto; }
+    .section-title {
+      text-align: center; font-size: 2.5rem; font-weight: 800;
+      margin-bottom: 60px; color: var(--primary);
     }
-    @keyframes boxAppear {
-      from { opacity: 0; transform: translateY(60px) scale(0.9); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
+    .features-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
     }
-    .brand { text-align: center; margin-bottom: 35px; }
-    .brand-icon {
-      width: 100px; height: 100px; margin: 0 auto 18px;
-      background: var(--gradient); border-radius: 24px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 38px;
-      box-shadow: 0 0 50px rgba(0,212,255,0.6), 0 0 100px rgba(0,100,255,0.3);
-      animation: iconPulse 3s ease-in-out infinite; position: relative;
-      overflow: hidden;
+    .feature-card {
+      background: var(--bg-card); padding: 40px; border-radius: 20px;
+      border: 1px solid var(--border); transition: all 0.3s;
+      text-align: center;
     }
-    .brand-icon::after {
-      content: ''; position: absolute; inset: -3px; border-radius: 27px;
-      background: var(--gradient); z-index: -1; opacity: 0.4;
-      filter: blur(8px); animation: iconPulse 3s ease-in-out infinite;
+    .feature-card:hover { transform: translateY(-10px); border-color: var(--primary); box-shadow: 0 10px 30px rgba(0,212,255,0.1); }
+    .feature-icon { font-size: 40px; margin-bottom: 20px; display: block; }
+    .feature-name { font-size: 1.5rem; font-weight: 700; margin-bottom: 15px; color: var(--gold); }
+    .feature-desc { color: var(--text-muted); font-size: 0.95rem; }
+
+    /* ===== Stats Section ===== */
+    .stats-bar {
+      background: rgba(0,212,255,0.05); padding: 60px 20px;
+      display: flex; justify-content: space-around; flex-wrap: wrap; gap: 30px;
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
     }
-    @keyframes iconPulse {
-      0%,100% { box-shadow: 0 0 30px rgba(0,212,255,0.4), 0 0 60px rgba(0,100,255,0.15); }
-      50%      { box-shadow: 0 0 50px rgba(0,212,255,0.7), 0 0 100px rgba(0,100,255,0.3); }
+    .stat-item { text-align: center; }
+    .stat-val { font-size: 3rem; font-weight: 900; color: var(--primary); display: block; }
+    .stat-lbl { color: var(--text-muted); font-weight: 600; }
+
+    /* ===== Login Section ===== */
+    .login-section {
+      min-height: 100vh; display: flex; justify-content: center; align-items: center;
+      padding: 40px 20px; background: linear-gradient(to bottom, transparent, rgba(0,212,255,0.05));
     }
-    .brand-name {
-      font-size: 2.4rem; font-weight: 900;
-      background: var(--gradient); background-size: 200% 200%;
-      -webkit-background-clip: text; background-clip: text; color: transparent;
-      letter-spacing: 3px; text-transform: uppercase; line-height: 1; margin-bottom: 8px;
-      animation: gradientShift 4s ease infinite;
+    .login-card {
+      width: 100%; max-width: 500px; background: var(--bg-card);
+      padding: 50px; border-radius: 30px; border: 1px solid var(--border);
+      box-shadow: 0 30px 60px rgba(0,0,0,0.5); position: relative;
     }
-    @keyframes gradientShift {
-      0%,100% { background-position: 0% 50%; }
-      50%      { background-position: 100% 50%; }
+    .login-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+      background: var(--gradient); border-radius: 30px 30px 0 0;
     }
-    .brand-tagline { color: var(--text-muted); font-size: 0.95rem; letter-spacing: 1px; }
-    .card {
-      background: var(--bg-card); border-radius: 24px; padding: 45px 40px;
-      border: 1px solid var(--border);
-      box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,212,255,0.05),
-                  inset 0 1px 0 rgba(255,255,255,0.05);
-      position: relative; overflow: hidden;
-      backdrop-filter: blur(10px);
+    .omar-brand {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      margin-bottom: 30px;
     }
-    .card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-      background: var(--gradient); background-size: 200% 200%;
-      animation: gradientShift 4s ease infinite;
+    .omar-name { font-size: 2rem; font-weight: 900; color: var(--primary); }
+    .verify-badge { width: 24px; height: 24px; fill: #0088cc; }
+
+    .form-group { margin-bottom: 25px; }
+    .form-group label { display: block; margin-bottom: 10px; color: var(--text-muted); font-weight: 600; }
+    .input-container { position: relative; }
+    .input-container input {
+      width: 100%; padding: 15px 45px; background: rgba(0,0,0,0.3);
+      border: 2px solid var(--border); border-radius: 15px; color: #fff;
+      font-family: inherit; transition: all 0.3s; outline: none;
     }
-    .form-heading {
-      text-align: center; font-size: 1.55rem; font-weight: 800; color: var(--text);
-      margin-bottom: 32px; letter-spacing: 1px; position: relative; padding-bottom: 16px;
+    .input-container input:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(0,212,255,0.2); }
+    .input-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--primary); }
+    
+    .btn-submit {
+      width: 100%; padding: 16px; background: var(--gradient);
+      border: none; border-radius: 15px; color: #000; font-weight: 900;
+      font-size: 1.1rem; cursor: pointer; transition: all 0.3s;
+      text-transform: uppercase; letter-spacing: 1px;
     }
-    .form-heading::after {
-      content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-      width: 60px; height: 3px; background: var(--gradient); border-radius: 2px;
+    .btn-submit:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,212,255,0.4); }
+
+    .footer {
+      text-align: center; padding: 40px; color: var(--text-muted);
+      border-top: 1px solid var(--border); font-size: 0.9rem;
     }
-    .field { margin-bottom: 22px; position: relative; }
-    .field label {
-      display: block; margin-bottom: 9px; color: var(--text-muted);
-      font-size: 0.9rem; font-weight: 600; letter-spacing: 0.5px; transition: color 0.3s;
-    }
-    .field:focus-within label { color: var(--primary); }
-    .input-wrap { position: relative; }
-    .input-icon {
-      position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
-      font-size: 18px; pointer-events: none; transition: all 0.3s; z-index: 2;
-    }
-    .field input {
-      width: 100%; padding: 15px 50px 15px 50px;
-      background: rgba(0,0,0,0.5); border: 2px solid rgba(0,212,255,0.2);
-      border-radius: 14px; color: var(--text); font-size: 1rem;
-      font-family: 'Tajawal', sans-serif; font-weight: 500; transition: all 0.3s; outline: none;
-    }
-    .field input:focus {
-      border-color: var(--primary); background: rgba(0,212,255,0.06);
-      box-shadow: 0 0 0 4px rgba(0,212,255,0.1), 0 0 20px rgba(0,212,255,0.15);
-    }
-    .toggle-pass {
-      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-      background: none; border: none; cursor: pointer; font-size: 18px;
-      color: var(--text-muted); padding: 4px; transition: color 0.3s; z-index: 2;
-    }
-    .toggle-pass:hover { color: var(--primary); }
-    .remember-row {
-      display: flex; align-items: center; gap: 10px;
-      margin-bottom: 26px; cursor: pointer; user-select: none;
-    }
-    .remember-row input[type="checkbox"] { display: none; }
-    .custom-check {
-      width: 22px; height: 22px; border: 2px solid rgba(0,212,255,0.4);
-      border-radius: 7px; background: rgba(0,0,0,0.4); position: relative;
-      transition: all 0.3s; flex-shrink: 0;
-    }
-    .remember-row input:checked + .custom-check {
-      background: var(--primary); border-color: var(--primary);
-      box-shadow: 0 0 15px rgba(0,212,255,0.5);
-    }
-    .remember-row input:checked + .custom-check::after {
-      content: '✓'; position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%,-50%); color: #000; font-size: 13px; font-weight: 900;
-    }
-    .remember-label { color: var(--text-muted); font-size: 0.9rem; font-weight: 500; }
-    .btn-login {
-      width: 100%; padding: 17px; background: var(--gradient); background-size: 200% 200%;
-      border: none; border-radius: 14px; color: #000; font-size: 1.1rem; font-weight: 900;
-      cursor: pointer; font-family: 'Tajawal', sans-serif; letter-spacing: 1px;
-      text-transform: uppercase; position: relative; overflow: hidden; transition: all 0.3s;
-      animation: gradientShift 4s ease infinite;
-    }
-    .btn-login:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(0,136,255,0.5); }
-    .btn-login:active { transform: translateY(-1px); }
-    .btn-login::before {
-      content: ''; position: absolute; top: 0; left: -100%;
-      width: 100%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
-      transition: 0.5s;
-    }
-    .btn-login:hover::before { left: 100%; }
-    .btn-login .btn-text { transition: opacity 0.3s; }
-    .btn-login .btn-spinner {
-      display: none; width: 22px; height: 22px;
-      border: 3px solid rgba(0,0,0,0.3); border-top-color: #000;
-      border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .btn-login.loading .btn-text { display: none; }
-    .btn-login.loading .btn-spinner { display: block; }
-    .alert {
-      margin-top: 18px; padding: 14px 18px; border-radius: 12px;
-      font-size: 0.95rem; font-weight: 600; text-align: center; display: none;
-      animation: alertIn 0.4s ease;
-    }
-    @keyframes alertIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .alert.success { background: rgba(0,255,136,0.1); border: 2px solid rgba(0,255,136,0.3); color: var(--success); }
-    .alert.error   { background: rgba(255,68,68,0.1);  border: 2px solid rgba(255,68,68,0.3);  color: var(--error); }
-    .admin-hint {
-      margin-top: 20px; padding: 14px; border-radius: 12px;
-      background: rgba(255,215,0,0.06); border: 1px solid rgba(255,215,0,0.2);
-      text-align: center; display: none;
-    }
-    .admin-hint p { color: var(--gold); font-size: 0.85rem; font-weight: 600; }
-    .divider {
-      display: flex; align-items: center; gap: 12px; margin: 22px 0;
-    }
-    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: rgba(0,212,255,0.15); }
-    .divider span { color: var(--text-muted); font-size: 0.8rem; }
-    .footer-info { text-align: center; margin-top: 20px; color: var(--text-muted); font-size: 0.82rem; }
-    .footer-info span { color: var(--primary); font-weight: 700; }
-    @media (max-width: 520px) { .card { padding: 28px 20px; } .brand-name { font-size: 1.9rem; } }
-    @keyframes shake {
-      0%,100% { transform: translateX(0); }
-      20%      { transform: translateX(-8px); }
-      40%      { transform: translateX(8px); }
-      60%      { transform: translateX(-5px); }
-      80%      { transform: translateX(5px); }
+
+    @keyframes fadeInDown { from {opacity: 0; transform: translateY(-30px);} to {opacity: 1; transform: translateY(0);} }
+    @media (max-width: 768px) {
+      .hero-title { font-size: 2.5rem; }
+      .login-card { padding: 30px; }
     }
   </style>
 </head>
 <body>
   <canvas id="bgCanvas"></canvas>
-  <div class="stars-layer" id="starsLayer"></div>
 
-  <div class="login-wrapper">
-    <div class="login-box">
-      <div class="brand">
-        <div class="brand-icon"><img src="{{ url_for('static', filename='omar_login_image.png') }}" alt="OMAR BRO HOST" style="width: 100%; height: 100%; object-fit: cover; border-radius: 24px;"></div>
-        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px;">
-          <span style="font-size: 1.8rem; font-weight: 900; color: var(--primary);">OMAR</span>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="#0088cc"/>
-          </svg>
-        </div>
-        <div class="brand-name">OMAR BRO HOST</div>
-        <div class="brand-tagline">لوحة تحكم احترافية للاستضافة</div>
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-brand">
+      <img src="/static/omar_login_image.png" alt="Logo" class="hero-logo">
+      <h1 class="hero-title">OMAR BRO HOST</h1>
+      <p class="hero-subtitle">المنصة الأقوى لاستضافة البوتات والسيرفرات بأداء أسطوري وحماية متكاملة.</p>
+    </div>
+    <div class="scroll-down" onclick="document.getElementById('features').scrollIntoView()">
+      <span>🔽 اكتشف المزيد</span>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="section" id="features">
+    <h2 class="section-title">لماذا تختار OMAR BRO HOST؟</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">🚀</span>
+        <h3 class="feature-name">سرعة فائقة</h3>
+        <p class="feature-desc">سيرفراتنا تعمل بأحدث التقنيات لضمان استجابة فورية لبوتاتك دون أي تأخير.</p>
       </div>
-      <div class="card">
-        <h2 class="form-heading">تسجيل الدخول</h2>
-
-        <div class="field">
-          <label for="username">اسم المستخدم</label>
-          <div class="input-wrap">
-            <input type="text" id="username" placeholder="أدخل اسم المستخدم" autocomplete="username" />
-            <span class="input-icon">👤</span>
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="password">كلمة المرور</label>
-          <div class="input-wrap">
-            <input type="password" id="password" placeholder="أدخل كلمة المرور" autocomplete="current-password" />
-            <span class="input-icon">🔒</span>
-            <button class="toggle-pass" type="button" onclick="togglePassword()" id="toggleBtn" title="إظهار/إخفاء">👁️</button>
-          </div>
-        </div>
-
-        <label class="remember-row">
-          <input type="checkbox" id="rememberMe">
-          <span class="custom-check"></span>
-          <span class="remember-label">تذكرني لمدة 30 يوماً</span>
-        </label>
-
-        <button class="btn-login" id="loginBtn" onclick="doLogin()">
-          <span class="btn-text">🚀 دخول إلى النظام</span>
-          <div class="btn-spinner"></div>
-        </button>
-
-        <div class="alert" id="alertMsg"></div>
-
-        <div class="admin-hint" id="adminHint">
-          <p>👑 تسجيل دخول المسؤول — صلاحيات كاملة</p>
-        </div>
-
-        <div class="divider"><span>OMAR 2026©</span></div>
-        <div class="footer-info">مطور بواسطة <span>OMAR</span> · آمن ومشفر</div>
+      <div class="feature-card">
+        <span class="feature-icon">🛡️</span>
+        <h3 class="feature-name">حماية قصوى</h3>
+        <p class="feature-desc">نظام حماية متطور ضد هجمات DDoS وتشفير كامل لبياناتك وملفاتك.</p>
       </div>
+      <div class="feature-card">
+        <span class="feature-icon">💎</span>
+        <h3 class="feature-name">لوحة تحكم ذكية</h3>
+        <p class="feature-desc">واجهة مستخدم بسيطة واحترافية تمكنك من إدارة كل شيء بضغطة زر واحدة.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Bar -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-val">+500</span>
+      <span class="stat-lbl">بوت نشط</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-val">99.9%</span>
+      <span class="stat-lbl">وقت التشغيل</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-val">+200</span>
+      <span class="stat-lbl">عميل سعيد</span>
     </div>
   </div>
 
+  <!-- Login Section -->
+  <section class="login-section" id="login">
+    <div class="login-card">
+      <div class="omar-brand">
+        <span class="omar-name">OMAR</span>
+        <svg class="verify-badge" viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z"/>
+        </svg>
+      </div>
+      <h2 style="text-align: center; margin-bottom: 30px; font-weight: 800;">تسجيل الدخول للوحة التحكم</h2>
+      
+      <form id="loginForm">
+        <div class="form-group">
+          <label>اسم المستخدم</label>
+          <div class="input-container">
+            <input type="text" id="username" placeholder="أدخل اسم المستخدم" required>
+            <span class="input-icon">👤</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>كلمة المرور</label>
+          <div class="input-container">
+            <input type="password" id="password" placeholder="أدخل كلمة المرور" required>
+            <span class="input-icon">🔒</span>
+          </div>
+        </div>
+        <button type="submit" class="btn-submit" id="loginBtn">دخول أسطوري 🚀</button>
+      </form>
+      <div id="alert" style="margin-top: 20px; text-align: center; display: none; padding: 10px; border-radius: 10px;"></div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>جميع الحقوق محفوظة لـ <span style="color: var(--primary); font-weight: 700;">OMAR BRO HOST</span> &copy; 2026</p>
+    <p style="margin-top: 10px; font-size: 0.8rem;">مطور بواسطة OMAR | آمن ومشفر بنسبة 100%</p>
+  </footer>
+
   <script>
-    /* ===== Canvas Background ===== */
+    // Background Animation
     const canvas = document.getElementById('bgCanvas');
     const ctx = canvas.getContext('2d');
-    let W, H, particles = [];
+    let particles = [];
 
-    function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+    function initCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
 
     class Particle {
-      constructor() { this.reset(); }
-      reset() {
-        this.x = Math.random() * W; this.y = Math.random() * H;
-        this.vx = (Math.random()-0.5)*0.4; this.vy = (Math.random()-0.5)*0.4;
-        this.r = Math.random()*1.5+0.5; this.alpha = Math.random()*0.4+0.1;
-        this.color = Math.random()>0.5 ? '#00d4ff' : '#0066ff';
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2;
+        this.speedX = Math.random() * 0.5 - 0.25;
+        this.speedY = Math.random() * 0.5 - 0.25;
+        this.opacity = Math.random();
       }
       update() {
-        this.x += this.vx; this.y += this.vy;
-        if (this.x<0||this.x>W||this.y<0||this.y>H) this.reset();
+        this.x += this.speedX;
+        this.y += this.speedY;
+        if (this.x > canvas.width) this.x = 0;
+        if (this.x < 0) this.x = canvas.width;
+        if (this.y > canvas.height) this.y = 0;
+        if (this.y < 0) this.y = canvas.height;
       }
       draw() {
-        ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
-        ctx.fillStyle = this.color; ctx.globalAlpha = this.alpha; ctx.fill(); ctx.globalAlpha = 1;
+        ctx.fillStyle = `rgba(0, 212, 255, ${this.opacity})`;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
       }
     }
 
-    function initParticles() { particles=[]; for(let i=0;i<120;i++) particles.push(new Particle()); }
-
-    function drawConnections() {
-      for(let i=0;i<particles.length;i++) {
-        for(let j=i+1;j<particles.length;j++) {
-          const dx=particles[i].x-particles[j].x, dy=particles[i].y-particles[j].y;
-          const d=Math.sqrt(dx*dx+dy*dy);
-          if(d<100) {
-            ctx.beginPath(); ctx.moveTo(particles[i].x,particles[i].y);
-            ctx.lineTo(particles[j].x,particles[j].y); ctx.strokeStyle='#00d4ff';
-            ctx.globalAlpha=(1-d/100)*0.08; ctx.lineWidth=0.5; ctx.stroke(); ctx.globalAlpha=1;
-          }
-        }
-      }
+    function createParticles() {
+      for (let i = 0; i < 100; i++) particles.push(new Particle());
     }
 
     function animate() {
-      ctx.clearRect(0,0,W,H);
-      particles.forEach(p=>{p.update();p.draw()});
-      drawConnections(); requestAnimationFrame(animate);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => { p.update(); p.draw(); });
+      requestAnimationFrame(animate);
     }
 
-    resize(); initParticles(); animate();
-    window.addEventListener('resize', ()=>{resize();initParticles();});
+    window.addEventListener('resize', initCanvas);
+    initCanvas();
+    createParticles();
+    animate();
 
-    /* ===== Stars ===== */
-    const starsLayer = document.getElementById('starsLayer');
-    for(let i=0;i<80;i++) {
-      const s = document.createElement('div'); s.className='star';
-      s.style.left = Math.random()*100+'%'; s.style.top = Math.random()*100+'%';
-      s.style.setProperty('--dur',(2+Math.random()*4).toFixed(1)+'s');
-      s.style.setProperty('--op',(0.3+Math.random()*0.7).toFixed(2));
-      s.style.animationDelay = (Math.random()*5).toFixed(1)+'s';
-      starsLayer.appendChild(s);
-    }
-
-    /* ===== Password Toggle ===== */
-    function togglePassword() {
-      const inp = document.getElementById('password');
-      const btn = document.getElementById('toggleBtn');
-      if(inp.type==='password') { inp.type='text'; btn.textContent='🙈'; }
-      else { inp.type='password'; btn.textContent='👁️'; }
-    }
-
-    /* ===== Admin hint ===== */
-    document.getElementById('username').addEventListener('input', function() {
-      const hint = document.getElementById('adminHint');
-      hint.style.display = this.value.toLowerCase()==='rlh55' ? 'block' : 'none';
-    });
-
-    /* ===== Login ===== */
-    async function doLogin() {
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value.trim();
-      const remember = document.getElementById('rememberMe').checked;
+    // Login Logic
+    document.getElementById('loginForm').onsubmit = async (e) => {
+      e.preventDefault();
       const btn = document.getElementById('loginBtn');
+      const alert = document.getElementById('alert');
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
 
-      if(!username||!password) { showAlert('يرجى ملء جميع الحقول','error'); shakeCard(); return; }
-
-      btn.classList.add('loading'); btn.disabled=true; hideAlert();
+      btn.disabled = true;
+      btn.textContent = 'جاري التحقق...';
 
       try {
-        const res = await fetch('/api/login',{
-          method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({username, password, remember_me: remember})
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({username, password, remember: true})
         });
         const data = await res.json();
-        if(data.success) {
-          showAlert('✅ '+data.message+' — جاري التوجيه...','success');
-          setTimeout(()=>{ window.location.href = data.redirect||'/'; },1200);
+        if (data.success) {
+          alert.style.display = 'block';
+          alert.style.background = 'rgba(0, 255, 136, 0.1)';
+          alert.style.color = '#00ff88';
+          alert.textContent = '✅ تم تسجيل الدخول بنجاح! جاري التحويل...';
+          setTimeout(() => window.location.href = data.redirect || '/', 1000);
         } else {
-          showAlert('❌ '+data.message,'error'); shakeCard();
-          btn.classList.remove('loading'); btn.disabled=false;
+          throw new Error(data.message);
         }
-      } catch(e) {
-        showAlert('⚠️ خطأ في الاتصال بالخادم','error'); shakeCard();
-        btn.classList.remove('loading'); btn.disabled=false;
+      } catch (err) {
+        alert.style.display = 'block';
+        alert.style.background = 'rgba(255, 68, 68, 0.1)';
+        alert.style.color = '#ff4444';
+        alert.textContent = '❌ ' + (err.message || 'خطأ في تسجيل الدخول');
+        btn.disabled = false;
+        btn.textContent = 'دخول أسطوري 🚀';
       }
-    }
-
-    function showAlert(msg,type) {
-      const el=document.getElementById('alertMsg');
-      el.textContent=msg; el.className='alert '+type; el.style.display='block';
-    }
-    function hideAlert() { document.getElementById('alertMsg').style.display='none'; }
-    function shakeCard() {
-      const card=document.querySelector('.card');
-      card.style.animation='shake 0.5s ease';
-      setTimeout(()=>{card.style.animation='';},500);
-    }
-
-    /* ===== Check auth ===== */
-    async function checkAuth() {
-      try {
-        const res = await fetch('/api/current_user');
-        const data = await res.json();
-        if(data.success) window.location.href='/';
-      } catch(e) {}
-    }
-
-    document.addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
-    document.addEventListener('DOMContentLoaded', checkAuth);
+    };
   </script>
 </body>
 </html>
