@@ -29,6 +29,7 @@ USERS_FILE = os.path.join(BASE_DIR, "users.json")
 REMEMBER_TOKENS_FILE = os.path.join(BASE_DIR, "remember_tokens.json")
 BOTS_CONFIG_FILE = os.path.join(BASE_DIR, "bots_config.json")
 PIDS_FILE = os.path.join(BASE_DIR, "pids.json")
+SUPPORT_CHAT_FILE = os.path.join(BASE_DIR, "support_chat.json")
 
 # الحساب الرئيسي (المسؤول)
 ADMIN_USERNAME = "OMAR_ADMIN"
@@ -1049,12 +1050,128 @@ def get_admin_logs():
             
     return jsonify(logs_data)
 
+# ============== Support Chat System ==============
+
+def init_support_chat():
+    if not os.path.exists(SUPPORT_CHAT_FILE):
+        with open(SUPPORT_CHAT_FILE, "w", encoding="utf-8") as f:
+            json.dump({}, f)
+
+@app.route('/api/support/send', methods=['POST'])
+def send_support_message():
+    if 'username' not in session:
+        return jsonify({"success": False, "message": "غير مصرح"}), 403
+    
+    data = request.get_json()
+    message = data.get('message', '').strip()
+    if not message:
+        return jsonify({"success": False, "message": "الرسالة فارغة"})
+    
+    init_support_chat()
+    with open(SUPPORT_CHAT_FILE, "r", encoding="utf-8") as f:
+        chats = json.load(f)
+    
+    username = session['username']
+    if username not in chats:
+        chats[username] = []
+    
+    chats[username].append({
+        "sender": username,
+        "message": message,
+        "timestamp": datetime.now().isoformat(),
+        "read": False
+    })
+    
+    with open(SUPPORT_CHAT_FILE, "w", encoding="utf-8") as f:
+        json.dump(chats, f, indent=2, ensure_ascii=False)
+    
+    return jsonify({"success": True, "message": "تم إرسال الرسالة بنجاح"})
+
+@app.route('/api/support/messages', methods=['GET'])
+def get_support_messages():
+    if 'username' not in session:
+        return jsonify({"messages": []}), 403
+    
+    init_support_chat()
+    with open(SUPPORT_CHAT_FILE, "r", encoding="utf-8") as f:
+        chats = json.load(f)
+    
+    username = session['username']
+    messages = chats.get(username, [])
+    return jsonify({"messages": messages})
+
+@app.route('/api/support/all-chats', methods=['GET'])
+def get_all_support_chats():
+    if 'username' not in session or not is_admin(session['username']):
+        return jsonify({"chats": {}}), 403
+    
+    init_support_chat()
+    with open(SUPPORT_CHAT_FILE, "r", encoding="utf-8") as f:
+        chats = json.load(f)
+    
+    return jsonify({"chats": chats})
+
+@app.route('/api/support/reply', methods=['POST'])
+def reply_support_message():
+    if 'username' not in session or not is_admin(session['username']):
+        return jsonify({"success": False, "message": "غير مصرح"}), 403
+    
+    data = request.get_json()
+    target_user = data.get('user', '').strip()
+    message = data.get('message', '').strip()
+    
+    if not target_user or not message:
+        return jsonify({"success": False, "message": "بيانات ناقصة"})
+    
+    init_support_chat()
+    with open(SUPPORT_CHAT_FILE, "r", encoding="utf-8") as f:
+        chats = json.load(f)
+    
+    if target_user not in chats:
+        chats[target_user] = []
+    
+    chats[target_user].append({
+        "sender": "ADMIN",
+        "message": message,
+        "timestamp": datetime.now().isoformat(),
+        "read": False
+    })
+    
+    with open(SUPPORT_CHAT_FILE, "w", encoding="utf-8") as f:
+        json.dump(chats, f, indent=2, ensure_ascii=False)
+    
+    return jsonify({"success": True, "message": "تم إرسال الرد بنجاح"})
+
+@app.route('/api/system/metrics', methods=['GET'])
+def get_system_metrics():
+    if 'username' not in session:
+        return jsonify({"error": "غير مصرح"}), 403
+    
+    try:
+        cpu_percent = psutil.cpu_percent(interval=1)
+        memory = psutil.virtual_memory()
+        disk = psutil.disk_usage('/')
+        
+        return jsonify({
+            "cpu": cpu_percent,
+            "memory": memory.percent,
+            "memory_used": memory.used / (1024**3),
+            "memory_total": memory.total / (1024**3),
+            "disk": disk.percent,
+            "disk_used": disk.used / (1024**3),
+            "disk_total": disk.total / (1024**3),
+            "timestamp": datetime.now().isoformat()
+        })
+    except:
+        return jsonify({"error": "تعذر الحصول على البيانات"}), 500
+
 # ============== Startup ==============
 
 def startup():
     """تهيئة النظام عند البدء"""
     init_users_db()
     init_tokens_db()
+    init_support_chat()
     
     # بدء نظام Keep-Alive في خيط منفصل
     ka_thread = threading.Thread(target=keep_alive_ping, daemon=True)

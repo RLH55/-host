@@ -6,6 +6,7 @@
   <title>OMAR BRO HOST</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
       --bg: #05060a;
@@ -91,6 +92,62 @@
       background: linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent); transition: 0.5s;
     }
     .new-srv-btn:hover::before { left: 100%; }
+    
+    /* ===== Support Chat ===== */
+    .support-btn {
+      position: fixed; bottom: 80px; right: 20px; z-index: 999;
+      width: 50px; height: 50px; border-radius: 50%;
+      background: var(--gradient); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; box-shadow: 0 4px 15px rgba(0,212,255,0.4);
+      transition: all 0.3s; animation: float 3s ease-in-out infinite;
+    }
+    .support-btn:hover { transform: scale(1.1); }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    
+    .chat-modal {
+      position: fixed; bottom: 80px; right: 20px; z-index: 999;
+      width: 350px; height: 450px; background: var(--card-bg2);
+      border: 1px solid var(--panel-border); border-radius: 12px;
+      display: none; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+    .chat-header {
+      padding: 14px; border-bottom: 1px solid var(--panel-border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .chat-title { color: var(--accent); font-weight: 700; }
+    .chat-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px; }
+    .chat-messages {
+      flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px;
+    }
+    .chat-msg { padding: 8px 12px; border-radius: 8px; font-size: 12px; max-width: 85%; word-wrap: break-word; }
+    .chat-msg.user { background: rgba(0,212,255,0.2); color: var(--accent); align-self: flex-end; }
+    .chat-msg.admin { background: rgba(0,255,136,0.1); color: var(--success); align-self: flex-start; }
+    .chat-input-wrap {
+      padding: 10px; border-top: 1px solid var(--panel-border);
+      display: flex; gap: 8px;
+    }
+    .chat-input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--panel-border);
+      color: #e0ecf5; padding: 8px; border-radius: 6px; font-size: 12px; outline: none; }
+    .chat-send { background: var(--gradient); border: none; color: #001a2e; padding: 8px 12px;
+      border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 12px; }
+    
+    /* ===== Metrics Chart ===== */
+    .metrics-section {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px;
+    }
+    .metric-card {
+      background: var(--card-bg); border: 1px solid var(--panel-border);
+      border-radius: 10px; padding: 16px; position: relative; overflow: hidden;
+    }
+    .metric-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: var(--gradient);
+    }
+    .metric-title { color: var(--muted); font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+    .metric-value { color: var(--accent); font-size: 24px; font-weight: 800; }
+    .metric-chart { position: relative; height: 200px; margin-top: 12px; }
+    @media (max-width: 768px) { .metrics-section { grid-template-columns: 1fr; } .chat-modal { width: 90%; right: 5%; } }
 
     /* ===== Main ===== */
     .main { position: relative; z-index: 1; max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
@@ -904,9 +961,129 @@
     }
     function closeM() { document.getElementById('modalBackdrop').style.display='none'; }
 
+    /* ===== Support Chat Functions ===== */
+    let chatOpen = false;
+    function toggleChat() {
+      const modal = document.getElementById('chatModal');
+      chatOpen = !chatOpen;
+      modal.style.display = chatOpen ? 'flex' : 'none';
+      if(chatOpen) loadChatMessages();
+    }
+    async function loadChatMessages() {
+      try {
+        const res = await fetch('/api/support/messages');
+        const data = await res.json();
+        const msgBox = document.getElementById('chatMessages');
+        msgBox.innerHTML = data.messages.map(m => `
+          <div class="chat-msg ${m.sender === 'ADMIN' ? 'admin' : 'user'}">${m.message}</div>
+        `).join('');
+        msgBox.scrollTop = msgBox.scrollHeight;
+      } catch(e) {}
+    }
+    async function sendChatMessage() {
+      const input = document.getElementById('chatInput');
+      const msg = input.value.trim();
+      if(!msg) return;
+      try {
+        await fetch('/api/support/send', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({message: msg})
+        });
+        input.value = '';
+        loadChatMessages();
+      } catch(e) {}
+    }
+    
+    /* ===== System Metrics ===== */
+    let cpuChart, memChart;
+    async function loadSystemMetrics() {
+      try {
+        const res = await fetch('/api/system/metrics');
+        const data = await res.json();
+        document.getElementById('cpuValue').textContent = data.cpu.toFixed(1) + '%';
+        document.getElementById('memValue').textContent = data.memory.toFixed(1) + '%';
+        document.getElementById('diskValue').textContent = data.disk.toFixed(1) + '%';
+        updateCharts(data);
+      } catch(e) {}
+    }
+    function updateCharts(data) {
+      if(!cpuChart) initCharts();
+      cpuChart.data.labels.push(new Date().toLocaleTimeString('ar-SA'));
+      cpuChart.data.datasets[0].data.push(data.cpu);
+      if(cpuChart.data.labels.length > 10) {
+        cpuChart.data.labels.shift();
+        cpuChart.data.datasets[0].data.shift();
+      }
+      cpuChart.update();
+      
+      memChart.data.labels.push(new Date().toLocaleTimeString('ar-SA'));
+      memChart.data.datasets[0].data.push(data.memory);
+      if(memChart.data.labels.length > 10) {
+        memChart.data.labels.shift();
+        memChart.data.datasets[0].data.shift();
+      }
+      memChart.update();
+    }
+    function initCharts() {
+      const cpuCtx = document.getElementById('cpuChart')?.getContext('2d');
+      const memCtx = document.getElementById('memChart')?.getContext('2d');
+      if(!cpuCtx || !memCtx) return;
+      
+      cpuChart = new Chart(cpuCtx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'CPU %',
+            data: [],
+            borderColor: '#00d4ff',
+            backgroundColor: 'rgba(0,212,255,0.1)',
+            tension: 0.3,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, max: 100, ticks: { color: '#7a8a9a' }, grid: { color: 'rgba(0,212,255,0.1)' } },
+            x: { ticks: { color: '#7a8a9a' }, grid: { display: false } }
+          }
+        }
+      });
+      
+      memChart = new Chart(memCtx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Memory %',
+            data: [],
+            borderColor: '#00ff88',
+            backgroundColor: 'rgba(0,255,136,0.1)',
+            tension: 0.3,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, max: 100, ticks: { color: '#7a8a9a' }, grid: { color: 'rgba(0,255,136,0.1)' } },
+            x: { ticks: { color: '#7a8a9a' }, grid: { display: false } }
+          }
+        }
+      });
+    }
+    
     /* ===== Init ===== */
     document.addEventListener('DOMContentLoaded', ()=>{
       checkAuth();
+      loadSystemMetrics();
+      setInterval(loadSystemMetrics, 5000);
       document.getElementById('newBtn').onclick = ()=>{
         openM('اسم السيرفر الجديد','',async name=>{
           if(!name.trim()) { showToast('⚠️ اسم السيرفر لا يمكن أن يكون فارغاً','error'); return; }
@@ -923,13 +1100,43 @@
     });
 
     document.addEventListener('keydown', e=>{
-      if(e.key==='Escape') { closeEditor(); closeM(); }
+      if(e.key==='Escape') { closeEditor(); closeM(); if(chatOpen) toggleChat(); }
       if((e.ctrlKey||e.metaKey)&&e.key==='s') {
         e.preventDefault();
         if(document.getElementById('editorModal').style.display==='block') saveFile();
       }
     });
   </script>
+  <!-- Support Chat Button -->
+  <button class="support-btn" onclick="toggleChat()" title="الدعم الفني">💬</button>
+  
+  <!-- Chat Modal -->
+  <div class="chat-modal" id="chatModal">
+    <div class="chat-header">
+      <span class="chat-title">💬 الدعم الفني</span>
+      <button class="chat-close" onclick="toggleChat()">✕</button>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-wrap">
+      <input type="text" class="chat-input" id="chatInput" placeholder="اكتب رسالتك..." />
+      <button class="chat-send" onclick="sendChatMessage()">إرسال</button>
+    </div>
+  </div>
+  
+  <!-- System Metrics Section (Hidden by default, shown in home view) -->
+  <div class="metrics-section" id="metricsSection" style="display: none;">
+    <div class="metric-card">
+      <div class="metric-title">⚙️ استهلاك المعالج (CPU)</div>
+      <div class="metric-value" id="cpuValue">0%</div>
+      <div class="metric-chart"><canvas id="cpuChart"></canvas></div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-title">🧠 استهلاك الذاكرة (RAM)</div>
+      <div class="metric-value" id="memValue">0%</div>
+      <div class="metric-chart"><canvas id="memChart"></canvas></div>
+    </div>
+  </div>
+  
   <footer style="position: fixed; bottom: 0; left: 0; right: 0; text-align: center; padding: 12px; background: rgba(5,6,10,0.95); border-top: 1px solid rgba(0,212,255,0.2); color: #7a8a9a; font-size: 0.85rem; z-index: 500;">
     <span style="color: #00d4ff; font-weight: 700;">OMAR 2026©</span> — مطور بواسطة <span style="color: #00d4ff;">OMAR</span> · آمن ومشفر
   </footer>

@@ -111,6 +111,10 @@
       background: var(--blue-gradient); color: #fff; border: none; padding: 5px 10px;
       border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold;
     }
+    .support-chat-item {
+      background: rgba(0,212,255,0.05); border-left: 3px solid var(--gold);
+      padding: 12px; margin-bottom: 8px; border-radius: 6px;
+    }
     .stat-box {
       background: var(--bg-card); border-radius: 16px; padding: 22px 20px;
       border: 1px solid var(--border-gold); text-align: center; position: relative;
@@ -370,6 +374,17 @@
       </div>
       <div id="logsWrapper">
         <div class="log-container" id="adminLogs">جاري تحميل السجلات...</div>
+      </div>
+    </div>
+
+    <!-- Support Chat Management for Admin -->
+    <div class="card" style="margin-bottom: 24px;">
+      <div class="card-header">
+        <div class="card-title">💬 إدارة الدعم الفني</div>
+        <button class="btn-secondary" style="width: auto; margin: 0; padding: 5px 15px;" onclick="loadSupportChats()">تحديث الرسائل</button>
+      </div>
+      <div id="supportChatsWrapper" style="max-height: 400px; overflow-y: auto;">
+        <div style="text-align: center; padding: 20px; color: var(--text-muted);">جاري تحميل الرسائل...</div>
       </div>
     </div>
 
@@ -658,8 +673,59 @@
     }
 
     function viewUserFiles(username) {
-      alert('سيتم توجيهك لمشاهدة ملفات المستخدم: ' + username + '\n(هذه الميزة تتطلب صلاحيات وصول للمجلدات)');
+      alert('سيتم توجيهك لمشاهدة ملفات المستخدم: ' + username + '\n(هذه الميزة تتطلب صلاحيات وصول للمجلدات)')
       // يمكن إضافة توجيه لصفحة الملفات مع فلتر للمستخدم مستقبلاً
+    }
+
+    /* ===== Support Chat Management ===== */
+    async function loadSupportChats() {
+      try {
+        const res = await fetch('/api/support/all-chats');
+        const data = await res.json();
+        const wrapper = document.getElementById('supportChatsWrapper');
+        
+        if(Object.keys(data.chats).length === 0) {
+          wrapper.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-muted);">لا توجد رسائل دعم حالياً</div>';
+          return;
+        }
+        
+        let html = '';
+        for(const [username, messages] of Object.entries(data.chats)) {
+          html += `<div style="margin-bottom: 16px; padding: 12px; background: rgba(0,212,255,0.05); border-radius: 8px;">`;
+          html += `<div style="color: var(--gold); font-weight: 700; margin-bottom: 8px;">👤 ${username}</div>`;
+          for(const msg of messages) {
+            const isAdmin = msg.sender === 'ADMIN';
+            html += `<div style="margin: 4px 0; padding: 6px 8px; background: ${isAdmin ? 'rgba(0,255,136,0.1)' : 'rgba(0,212,255,0.1)'}; border-radius: 4px; font-size: 12px; color: ${isAdmin ? 'var(--success)' : 'var(--text-muted)'};"><strong>${msg.sender}:</strong> ${msg.message}</div>`;
+          }
+          html += `<input type="text" id="reply_${username}" placeholder="اكتب ردك..." style="width: 100%; padding: 6px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-gold); color: #fff; border-radius: 4px; margin-top: 8px; font-size: 12px;" />`;
+          html += `<button onclick="sendAdminReply('${username}')" style="width: 100%; padding: 6px; background: var(--gold-gradient); border: none; color: #000; border-radius: 4px; margin-top: 4px; cursor: pointer; font-weight: 700; font-size: 12px;">إرسال رد</button>`;
+          html += `</div>`;
+        }
+        wrapper.innerHTML = html;
+      } catch(e) {
+        document.getElementById('supportChatsWrapper').innerHTML = '<div style="text-align: center; padding: 20px; color: var(--error);">خطأ في تحميل الرسائل</div>';
+      }
+    }
+
+    async function sendAdminReply(username) {
+      const input = document.getElementById(`reply_${username}`);
+      const message = input.value.trim();
+      if(!message) return;
+      try {
+        const res = await fetch('/api/support/reply', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({user: username, message})
+        });
+        const data = await res.json();
+        if(data.success) {
+          showAlert('createAlert', '✅ تم إرسال الرد بنجاح', 'success');
+          input.value = '';
+          loadSupportChats();
+        }
+      } catch(e) {
+        showAlert('createAlert', '❌ خطأ في إرسال الرد', 'error');
+      }
     }
 
     /* ===== Delete User ===== */
@@ -704,7 +770,9 @@
     document.addEventListener('DOMContentLoaded', () => {
       checkAdminAuth();
       loadLogs();
+      loadSupportChats();
       setInterval(loadLogs, 30000); // تحديث السجلات كل 30 ثانية
+      setInterval(loadSupportChats, 10000); // تحديث رسائل الدعم كل 10 ثواني
     });
   </script>
   <footer style="position: fixed; bottom: 0; left: 0; right: 0; text-align: center; padding: 14px; background: rgba(5,6,10,0.95); border-top: 2px solid rgba(255,215,0,0.3); color: #8899aa; font-size: 0.85rem; z-index: 500;">
