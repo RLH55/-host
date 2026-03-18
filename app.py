@@ -44,18 +44,18 @@ def keep_alive_ping():
             time.sleep(600)
             
             # الحصول على رابط الموقع من متغيرات البيئة الخاصة بـ Render
-            # إذا لم يكن موجوداً، لا نفعل شيئاً لتجنب أي مشاكل في localhost
             own_url = os.environ.get("RENDER_EXTERNAL_URL")
             if own_url:
                 if not own_url.startswith("http"):
                     own_url = f"https://{own_url}"
                 
                 # إرسال طلب صامت تماماً مع User-Agent مخصص
-                # لا نستخدم أي كود يسبب تحديث الصفحة في المتصفح
+                # هذا الطلب يتم من السيرفر إلى نفسه ولا يراه المتصفح أبداً
                 requests.get(
                     f"{own_url}/api/ping", 
                     headers={"User-Agent": "Internal-Keep-Alive-System-Silent"}, 
-                    timeout=10
+                    timeout=10,
+                    verify=False # لتجنب مشاكل SSL في بعض البيئات
                 )
         except Exception:
             pass
