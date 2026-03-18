@@ -1,1228 +1,930 @@
 <!doctype html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OMAR BRO HOST</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-    
     :root {
       --bg: #05060a;
-      --muted: #99a3ad;
+      --muted: #7a8a9a;
       --accent: #00d4ff;
       --accent-light: #6aefff;
-      --accent-dark: #00a8cc;
-      --panel-border: rgba(0, 212, 255, 0.1);
-      --card: rgba(12, 17, 29, 0.8);
+      --accent-dark: #0099cc;
+      --panel-border: rgba(0, 212, 255, 0.12);
+      --card-bg: rgba(10, 15, 28, 0.85);
+      --card-bg2: rgba(6, 10, 20, 0.95);
       --gradient: linear-gradient(135deg, #00d4ff 0%, #0088ff 50%, #0066cc 100%);
       --success: #00ff88;
-      --error: #ff5555;
+      --error: #ff4444;
+      --warning: #ffaa00;
     }
-    
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: #e9f2f7;
-      padding-bottom: 40px;
-      min-height: 100vh;
-      overflow-x: hidden;
-      position: relative;
+      font-family: 'Inter', 'Tajawal', sans-serif;
+      background: var(--bg); color: #e0ecf5;
+      min-height: 100vh; overflow-x: hidden;
     }
-    
-    /* خلفية متحركة */
-    .animated-bg {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      overflow: hidden;
+
+    /* ===== Canvas BG ===== */
+    #bgCanvas {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 0; pointer-events: none;
+    }
+
+    /* ===== Topbar ===== */
+    .topbar {
+      position: sticky; top: 0; z-index: 1000;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 24px;
+      background: rgba(5, 6, 10, 0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--panel-border);
+      box-shadow: 0 2px 20px rgba(0,0,0,0.4);
+    }
+    .topbar-left { display: flex; align-items: center; gap: 14px; }
+    .home-btn {
+      background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.2);
+      color: var(--accent); width: 36px; height: 36px; border-radius: 9px;
+      cursor: pointer; font-size: 18px; display: flex; align-items: center;
+      justify-content: center; transition: all 0.3s;
+    }
+    .home-btn:hover { background: rgba(0,212,255,0.18); transform: scale(1.1); }
+    .panel-logo {
+      font-size: 17px; font-weight: 800;
+      background: var(--gradient); -webkit-background-clip: text;
+      background-clip: text; color: transparent; letter-spacing: 1.5px; text-transform: uppercase;
+    }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .user-chip {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(0,212,255,0.07); border: 1px solid rgba(0,212,255,0.15);
+      padding: 7px 14px; border-radius: 20px; font-size: 13px; color: var(--muted);
+    }
+    .user-chip .dot {
+      width: 8px; height: 8px; background: var(--success); border-radius: 50%;
+      animation: dotPulse 2s ease-in-out infinite;
+    }
+    @keyframes dotPulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(0,255,136,0.4); }
+      50%      { box-shadow: 0 0 0 6px rgba(0,255,136,0); }
+    }
+    .logout-btn {
+      background: transparent; border: 1px solid rgba(255,68,68,0.4); color: var(--error);
+      padding: 7px 14px; border-radius: 9px; cursor: pointer; font-size: 12px;
+      font-weight: 700; transition: all 0.3s; font-family: 'Tajawal', sans-serif;
+    }
+    .logout-btn:hover { background: rgba(255,68,68,0.12); transform: translateY(-1px); }
+    .new-srv-btn {
+      background: var(--gradient); color: #001a2e; padding: 9px 18px;
+      border-radius: 9px; border: 0; font-weight: 800; cursor: pointer;
+      font-size: 12px; letter-spacing: 0.5px; transition: all 0.3s;
+      position: relative; overflow: hidden;
+    }
+    .new-srv-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,136,255,0.4); }
+    .new-srv-btn::before {
+      content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+      background: linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent); transition: 0.5s;
+    }
+    .new-srv-btn:hover::before { left: 100%; }
+
+    /* ===== Main ===== */
+    .main { position: relative; z-index: 1; max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
+
+    /* ===== Home View ===== */
+    #homeView { animation: fadeUp 0.6s ease both; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px;
+    }
+    .section-title { font-size: 1.1rem; font-weight: 700; color: var(--accent); }
+    .section-count {
+      background: rgba(0,212,255,0.1); color: var(--accent); padding: 3px 12px;
+      border-radius: 20px; font-size: 12px; font-weight: 700;
+    }
+
+    /* ===== Server Cards ===== */
+    #cardsContainer {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px;
+    }
+    .srv-card {
+      background: var(--card-bg); border-radius: 16px; padding: 28px 22px;
+      border: 1px solid var(--panel-border); cursor: pointer; text-align: center;
+      transition: all 0.35s; backdrop-filter: blur(8px); position: relative; overflow: hidden;
+      animation: cardIn 0.5s ease both;
+    }
+    @keyframes cardIn { from{opacity:0;transform:translateY(20px)scale(0.95)} to{opacity:1;transform:translateY(0)scale(1)} }
+    .srv-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: var(--gradient);
+    }
+    .srv-card::after {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(0,212,255,0.06) 0%, transparent 60%);
       pointer-events: none;
     }
-    
-    .animated-line {
-      position: absolute;
-      background: linear-gradient(90deg, transparent, var(--accent), transparent);
-      animation: moveLine 20s linear infinite;
-      opacity: 0.05;
+    .srv-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      border-color: rgba(0,212,255,0.4);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 30px rgba(0,212,255,0.1);
     }
-    
-    @keyframes moveLine {
-      0% {
-        transform: translateX(-100px);
-      }
-      100% {
-        transform: translateX(calc(100vw + 100px));
-      }
+    .srv-icon-wrap {
+      width: 52px; height: 52px; margin: 0 auto 16px;
+      background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.2);
+      border-radius: 14px; display: flex; align-items: center; justify-content: center;
+      font-size: 24px; transition: all 0.3s;
     }
-    
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    
-    @keyframes pulse {
-      0%, 100% {
-        opacity: 1;
-        transform: scale(1);
-      }
-      50% {
-        opacity: 0.7;
-        transform: scale(1.05);
-      }
-    }
-    
-    @keyframes glow {
-      0%, 100% {
-        box-shadow: 0 0 10px var(--accent),
-                    0 0 20px var(--accent-light);
-      }
-      50% {
-        box-shadow: 0 0 20px var(--accent),
-                    0 0 40px var(--accent-light);
-      }
-    }
-    
-    /* Topbar styling */
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 20px;
-      border-bottom: 1px solid var(--panel-border);
-      position: sticky;
-      top: 0;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(10px);
-      z-index: 1000;
-      animation: slideIn 0.5s ease-out;
-    }
-    
-    .panel-logo {
-      font-size: 18px;
-      font-weight: 800;
-      background: var(--gradient);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-    
-    .new-btn {
-      background: var(--gradient);
-      color: #00121a;
-      padding: 8px 16px;
-      border-radius: 6px;
-      border: 0;
-      font-weight: 800;
-      cursor: pointer;
-      font-size: 12px;
-      transition: all 0.3s;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .new-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0, 136, 255, 0.4);
-    }
-    
-    .new-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: 0.5s;
-    }
-    
-    .new-btn:hover::before {
-      left: 100%;
-    }
-    
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: var(--muted);
-      font-size: 14px;
-    }
-    
-    .logout-btn {
-      background: transparent;
-      border: 1px solid var(--error);
-      color: var(--error);
-      padding: 6px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 12px;
-      transition: all 0.3s;
-    }
-    
-    .logout-btn:hover {
-      background: rgba(255, 85, 85, 0.1);
-    }
-    
-    .container {
-      max-width: 1200px;
-      margin: 30px auto;
-      padding: 0 20px;
-      animation: slideIn 0.7s ease-out;
-    }
-    
-    #cardsContainer {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 20px;
-      margin-top: 20px;
-    }
-    
-    .card {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 20px;
-      background: var(--card);
-      border-radius: 12px;
-      border: 1px solid var(--panel-border);
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.3s;
-      backdrop-filter: blur(5px);
-      animation: slideIn 0.5s ease-out;
-      opacity: 0;
-      animation-fill-mode: forwards;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: var(--gradient);
-    }
-    
-    .card:hover {
-      transform: translateY(-10px) scale(1.02);
-      border-color: var(--accent);
-      box-shadow: 0 15px 30px rgba(0, 212, 255, 0.2);
-    }
-    
-    .srv-icon {
-      width: 32px;
-      height: 22px;
-      background: var(--accent);
-      border-radius: 4px;
-      position: relative;
-      margin-bottom: 20px;
-      box-shadow: 0 8px 0 0 var(--accent);
-      animation: pulse 2s infinite;
-    }
-    
-    .srv-icon::after {
-      content: "";
-      position: absolute;
-      top: 4px;
-      left: 22px;
-      width: 4px;
-      height: 4px;
-      background: #000;
-      border-radius: 50%;
-      box-shadow: 0 8px 0 0 #000;
-    }
-    
-    .card-title {
-      font-size: 18px;
-      font-weight: 800;
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      color: #fff;
+    .srv-card:hover .srv-icon-wrap { background: rgba(0,212,255,0.2); transform: scale(1.1); }
+    .srv-card-title {
+      font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
       background: linear-gradient(90deg, #fff, var(--accent-light));
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+      margin-bottom: 6px;
     }
-    
-    .card-sub {
-      color: var(--muted);
-      font-size: 12px;
+    .srv-card-sub { color: var(--muted); font-size: 11px; margin-bottom: 10px; }
+    .srv-card-file {
+      font-size: 10px; color: var(--accent); opacity: 0.7;
+      background: rgba(0,212,255,0.06); padding: 4px 10px; border-radius: 20px;
+      display: inline-block;
     }
-    
-    /* Server View Styling */
-    .mgr-grid {
-      display: grid;
-      grid-template-columns: 1fr 320px;
-      gap: 20px;
-      margin-top: 20px;
-      animation: slideIn 0.6s ease-out;
+    .empty-state {
+      grid-column: 1/-1; text-align: center; padding: 60px 20px; color: var(--muted);
     }
-    
+    .empty-icon { font-size: 56px; margin-bottom: 16px; opacity: 0.5; }
+    .empty-state h3 { color: var(--accent); margin-bottom: 8px; font-size: 1.1rem; }
+    .empty-state p { font-size: 0.9rem; }
+
+    /* ===== Server View ===== */
+    #serverView { display: none; animation: fadeUp 0.5s ease both; }
+
+    .srv-header-row {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px;
+    }
+    .srv-name { font-size: 1.4rem; font-weight: 800; color: var(--accent); }
+    .tab-btns { display: flex; gap: 8px; }
+    .tab-btn {
+      padding: 9px 20px; border-radius: 9px; border: 1px solid var(--panel-border);
+      background: rgba(255,255,255,0.04); color: var(--muted); cursor: pointer;
+      font-size: 13px; font-weight: 700; transition: all 0.3s; font-family: 'Inter', sans-serif;
+    }
+    .tab-btn.active {
+      background: var(--gradient); color: #001a2e; border-color: transparent;
+      box-shadow: 0 4px 15px rgba(0,136,255,0.3);
+    }
+    .tab-btn:hover:not(.active) { background: rgba(255,255,255,0.08); color: var(--accent); }
+
+    /* ===== Console View ===== */
+    .console-layout { display: grid; grid-template-columns: 1fr 300px; gap: 18px; }
+    @media (max-width: 800px) { .console-layout { grid-template-columns: 1fr; } }
+
     .console-box {
-      background: rgba(0, 0, 0, 0.8);
-      padding: 20px;
-      height: 550px;
-      overflow-y: auto;
-      font-family: 'Courier New', monospace;
-      border-radius: 10px;
-      border: 1px solid var(--panel-border);
-      font-size: 13px;
-      white-space: pre-wrap;
-      color: #adbac7;
-      backdrop-filter: blur(5px);
+      background: rgba(0,0,0,0.85); padding: 18px; height: 520px; overflow-y: auto;
+      font-family: 'Courier New', monospace; border-radius: 14px;
+      border: 1px solid var(--panel-border); font-size: 12.5px; white-space: pre-wrap;
+      color: #9ab5c7; line-height: 1.6; backdrop-filter: blur(5px);
     }
-    
-    .console-box::-webkit-scrollbar {
-      width: 8px;
+    .console-box::-webkit-scrollbar { width: 6px; }
+    .console-box::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 3px; }
+    .console-box::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+
+    .sidebar { display: flex; flex-direction: column; gap: 12px; }
+
+    .action-btn {
+      width: 100%; padding: 14px; border: 0; border-radius: 11px; font-weight: 800;
+      cursor: pointer; color: white; transition: all 0.3s; font-size: 13px;
+      font-family: 'Tajawal', sans-serif; letter-spacing: 0.5px; position: relative; overflow: hidden;
     }
-    
-    .console-box::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.2);
-      border-radius: 4px;
+    .action-btn::after {
+      content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+      background: linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent); transition: 0.5s;
     }
-    
-    .console-box::-webkit-scrollbar-thumb {
-      background: var(--accent);
-      border-radius: 4px;
-    }
-    
-    .btn-act {
-      width: 100%;
-      padding: 14px;
-      margin-bottom: 10px;
-      border: 0;
-      border-radius: 8px;
-      font-weight: 700;
-      cursor: pointer;
-      color: white;
-      transition: all 0.3s;
-      position: relative;
-      overflow: hidden;
-      font-size: 14px;
-    }
-    
-    .btn-act::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: 0.5s;
-    }
-    
-    .btn-act:hover::after {
-      left: 100%;
-    }
-    
-    .btn-act.running {
-      background: white !important;
-      color: black !important;
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    
-    .btn-act.running:hover {
-      transform: none;
-      box-shadow: none;
-    }
-    
-    .stat-card {
-      background: rgba(255, 255, 255, 0.02);
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 10px;
-      border: 1px solid var(--panel-border);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      transition: all 0.3s;
-      backdrop-filter: blur(5px);
-    }
-    
-    .stat-card:hover {
-      transform: translateX(5px);
-      border-color: var(--accent);
-    }
-    
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      animation: slideIn 0.7s ease-out;
-    }
-    
-    th {
-      background: rgba(0, 212, 255, 0.1);
-      padding: 12px 10px;
-      text-align: left;
-      color: var(--accent);
-      font-weight: 600;
-      border-bottom: 2px solid var(--accent);
-    }
-    
-    td {
-      padding: 15px 10px;
-      border-bottom: 1px solid var(--panel-border);
+    .action-btn:hover::after { left: 100%; }
+    .action-btn:hover { transform: translateY(-2px); }
+    .action-btn.disabled { opacity: 0.4; cursor: not-allowed; }
+    .action-btn.disabled:hover { transform: none; }
+
+    .stat-widget {
+      background: rgba(255,255,255,0.03); padding: 14px 16px; border-radius: 12px;
+      border: 1px solid var(--panel-border); display: flex; align-items: center; gap: 12px;
       transition: all 0.3s;
     }
-    
-    tr:hover td {
-      background: rgba(0, 212, 255, 0.05);
+    .stat-widget:hover { border-color: rgba(0,212,255,0.3); transform: translateX(-3px); }
+    .stat-icon { font-size: 22px; }
+    .stat-info small { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 3px; }
+    .stat-info b { font-size: 14px; font-weight: 700; }
+    .status-running { color: var(--success); animation: statusPulse 2s infinite; }
+    .status-offline { color: var(--error); }
+    @keyframes statusPulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+
+    /* ===== Files View ===== */
+    #viewFiles { animation: fadeUp 0.4s ease both; }
+
+    .files-header {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;
     }
-    
-    .f-btn {
-      padding: 5px 10px;
-      border-radius: 5px;
-      border: 0;
-      font-size: 11px;
-      cursor: pointer;
-      margin-right: 5px;
-      background: rgba(43, 49, 58, 0.8);
-      color: white;
-      transition: all 0.3s;
+    .files-title { font-size: 1rem; font-weight: 700; color: var(--accent); }
+    .files-actions { display: flex; gap: 8px; }
+    .file-action-btn {
+      padding: 8px 16px; border-radius: 9px; border: 1px solid var(--panel-border);
+      background: rgba(255,255,255,0.04); color: #ccc; cursor: pointer;
+      font-size: 12px; font-weight: 700; transition: all 0.3s;
     }
-    
-    .f-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-    }
-    
-    #editor-modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.95);
-      z-index: 2000;
-      padding: 20px;
-      animation: slideIn 0.3s ease-out;
-    }
-    
-    .editor-cnt {
-      background: #0d1117;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      border-radius: 8px;
-      border: 1px solid #333;
-      overflow: hidden;
-    }
-    
-    #ed-area {
-      flex: 1;
-      background: #0a0e14;
-      color: #e6edf3;
-      padding: 20px;
-      border: none;
-      font-family: 'Courier New', monospace;
-      font-size: 14px;
-      outline: none;
-      resize: none;
-      line-height: 1.6;
-    }
-    
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.8);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 999;
-      animation: slideIn 0.3s ease-out;
-    }
-    
-    .modal {
-      width: 90%;
-      max-width: 400px;
-      background: #0c1115;
-      border-radius: 12px;
-      padding: 25px;
-      border: 1px solid var(--panel-border);
-      backdrop-filter: blur(10px);
-      animation: slideIn 0.4s ease-out;
-    }
-    
-    .modal h3 {
-      color: var(--accent);
-      margin-bottom: 15px;
-      font-size: 18px;
-    }
-    
-    .modal input {
-      width: 100%;
-      padding: 12px;
-      margin: 15px 0;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--panel-border);
-      color: white;
-      border-radius: 8px;
-      font-size: 14px;
-      transition: all 0.3s;
-    }
-    
-    .modal input:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
-    }
-    
-    .status-running {
-      color: var(--success);
-      animation: pulse 2s infinite;
-    }
-    
-    .status-offline {
-      color: var(--error);
-    }
-    
-    .loading-dots {
-      display: inline-flex;
-      gap: 4px;
-    }
-    
-    .loading-dots span {
-      width: 6px;
-      height: 6px;
-      background: var(--accent);
-      border-radius: 50%;
-      animation: pulse 1.5s infinite;
-    }
-    
-    .loading-dots span:nth-child(2) {
-      animation-delay: 0.2s;
-    }
-    
-    .loading-dots span:nth-child(3) {
-      animation-delay: 0.4s;
-    }
-    
-    /* تحسينات رفع الملفات التلقائي */
-    .upload-area {
-      border: 2px dashed var(--accent);
-      border-radius: 10px;
-      padding: 40px;
-      text-align: center;
-      margin: 20px 0;
-      cursor: pointer;
-      transition: all 0.3s;
-      background: rgba(0, 212, 255, 0.05);
+    .file-action-btn:hover { background: rgba(0,212,255,0.1); color: var(--accent); border-color: rgba(0,212,255,0.3); }
+    .file-action-btn.primary { background: var(--gradient); color: #001a2e; border-color: transparent; }
+    .file-action-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,136,255,0.3); }
+
+    /* ===== Upload Zone ===== */
+    .upload-zone {
+      border: 2px dashed rgba(0,212,255,0.3); border-radius: 14px;
+      padding: 36px 20px; text-align: center; margin-bottom: 20px;
+      cursor: pointer; transition: all 0.3s; background: rgba(0,212,255,0.03);
       position: relative;
     }
-    
-    .upload-area:hover {
-      background: rgba(0, 212, 255, 0.1);
-      border-color: var(--accent-light);
+    .upload-zone:hover, .upload-zone.dragover {
+      background: rgba(0,212,255,0.08); border-color: rgba(0,212,255,0.6);
+      transform: scale(1.01);
     }
-    
-    .upload-area.dragover {
-      background: rgba(0, 212, 255, 0.2);
-      border-color: var(--accent-light);
-      transform: scale(1.02);
+    .upload-zone.dragover { box-shadow: 0 0 30px rgba(0,212,255,0.2); }
+    .upload-zone-icon { font-size: 40px; margin-bottom: 12px; }
+    .upload-zone-text { color: var(--muted); font-size: 14px; margin-bottom: 6px; }
+    .upload-zone-hint { font-size: 11px; color: var(--muted); opacity: 0.6; }
+    .file-input-hidden {
+      position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;
     }
-    
-    .upload-icon {
-      font-size: 48px;
-      margin-bottom: 15px;
-      color: var(--accent);
-    }
-    
-    .upload-text {
-      color: var(--muted);
-      margin-bottom: 10px;
-      font-size: 16px;
-    }
-    
-    .upload-hint {
-      font-size: 12px;
-      color: var(--muted);
-      opacity: 0.7;
-    }
-    
-    .file-input {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      cursor: pointer;
-    }
-    
-    .upload-progress {
-      display: none;
-      margin-top: 15px;
-    }
-    
+    .upload-progress { display: none; margin-top: 14px; }
     .progress-bar {
-      width: 100%;
-      height: 10px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 5px;
-      overflow: hidden;
-      margin-top: 10px;
+      width: 100%; height: 8px; background: rgba(255,255,255,0.08);
+      border-radius: 4px; overflow: hidden; margin-bottom: 8px;
     }
-    
     .progress-fill {
-      height: 100%;
-      background: var(--gradient);
-      width: 0%;
-      transition: width 0.3s;
+      height: 100%; background: var(--gradient); width: 0%; transition: width 0.4s;
+      border-radius: 4px;
     }
-    
-    .upload-status {
-      margin-top: 10px;
-      font-size: 14px;
-      color: var(--accent);
+    .upload-status { font-size: 13px; color: var(--accent); font-weight: 600; }
+
+    /* ===== Files Table ===== */
+    .files-table { width: 100%; border-collapse: collapse; }
+    .files-table th {
+      background: rgba(0,212,255,0.07); padding: 12px 14px; text-align: right;
+      color: var(--accent); font-weight: 700; font-size: 12px; text-transform: uppercase;
+      letter-spacing: 0.5px; border-bottom: 2px solid rgba(0,212,255,0.2);
     }
-    
-    @media (max-width: 768px) {
-      .mgr-grid {
-        grid-template-columns: 1fr;
-      }
-      
-      #cardsContainer {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      }
-      
-      .topbar {
-        flex-direction: column;
-        gap: 10px;
-        padding: 10px;
-      }
-      
-      .user-info {
-        flex-direction: column;
-        gap: 5px;
-      }
+    .files-table td {
+      padding: 13px 14px; border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 13px; transition: all 0.2s;
+    }
+    .files-table tr:hover td { background: rgba(0,212,255,0.04); }
+    .file-name { color: var(--accent); cursor: pointer; font-weight: 600; }
+    .file-name:hover { color: var(--accent-light); text-decoration: underline; }
+    .f-btn {
+      padding: 5px 11px; border-radius: 7px; border: 0; font-size: 11px;
+      cursor: pointer; margin-left: 5px; font-weight: 700; transition: all 0.2s;
+    }
+    .f-btn:hover { transform: translateY(-1px); }
+    .f-btn.install { background: var(--gradient); color: #001a2e; }
+    .f-btn.rename  { background: rgba(0,212,255,0.15); color: var(--accent); }
+    .f-btn.delete  { background: rgba(255,68,68,0.15); color: var(--error); }
+    .f-btn.set-main { background: rgba(0,255,136,0.15); color: var(--success); }
+
+    /* ===== Editor Modal ===== */
+    #editorModal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.96); z-index: 3000; padding: 16px;
+      animation: fadeUp 0.3s ease both;
+    }
+    .editor-wrap {
+      height: 100%; display: flex; flex-direction: column;
+      background: #0a0d14; border-radius: 14px; border: 1px solid #1e2535; overflow: hidden;
+    }
+    .editor-header {
+      padding: 14px 18px; border-bottom: 1px solid #1e2535;
+      display: flex; justify-content: space-between; align-items: center;
+      background: #080b12;
+    }
+    .editor-filename { font-weight: 700; color: var(--accent); font-size: 14px; }
+    .editor-actions { display: flex; gap: 8px; }
+    .editor-btn {
+      padding: 7px 16px; border-radius: 8px; border: 0; cursor: pointer;
+      font-size: 12px; font-weight: 700; transition: all 0.2s;
+    }
+    .editor-btn.save { background: var(--gradient); color: #001a2e; }
+    .editor-btn.save:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,136,255,0.3); }
+    .editor-btn.close { background: rgba(255,68,68,0.2); color: var(--error); border: 1px solid rgba(255,68,68,0.3); }
+    .editor-btn.close:hover { background: rgba(255,68,68,0.35); }
+    #edArea {
+      flex: 1; background: #080b12; color: #d0e0ec; padding: 18px;
+      border: none; font-family: 'Courier New', monospace; font-size: 13.5px;
+      outline: none; resize: none; line-height: 1.7; tab-size: 2;
+    }
+    .editor-statusbar {
+      padding: 6px 18px; background: #050810; border-top: 1px solid #1e2535;
+      font-size: 11px; color: var(--muted); display: flex; gap: 20px;
+    }
+
+    /* ===== Confirm Modal ===== */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+      display: none; align-items: center; justify-content: center; z-index: 2000;
+    }
+    .modal {
+      width: 90%; max-width: 420px; background: #0c1120; border-radius: 16px;
+      padding: 28px; border: 1px solid var(--panel-border);
+      box-shadow: 0 30px 60px rgba(0,0,0,0.6); animation: fadeUp 0.4s ease both;
+    }
+    .modal h3 { color: var(--accent); margin-bottom: 18px; font-size: 1.1rem; }
+    .modal input {
+      width: 100%; padding: 13px 16px; background: rgba(255,255,255,0.05);
+      border: 1px solid var(--panel-border); color: white; border-radius: 10px;
+      font-size: 14px; outline: none; transition: all 0.3s; font-family: 'Tajawal', sans-serif;
+    }
+    .modal input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,212,255,0.1); }
+    .modal-btns { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+    .modal-btn {
+      padding: 10px 20px; border-radius: 9px; border: 0; cursor: pointer;
+      font-size: 13px; font-weight: 700; transition: all 0.2s; font-family: 'Tajawal', sans-serif;
+    }
+    .modal-btn.cancel { background: rgba(255,255,255,0.07); color: var(--muted); }
+    .modal-btn.cancel:hover { background: rgba(255,255,255,0.12); }
+    .modal-btn.confirm { background: var(--gradient); color: #001a2e; }
+    .modal-btn.confirm:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,136,255,0.3); }
+
+    /* ===== Toast ===== */
+    #toast {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: rgba(10,15,28,0.95); border: 1px solid var(--panel-border); color: #fff;
+      padding: 12px 24px; border-radius: 12px; font-size: 13px; font-weight: 600;
+      z-index: 5000; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+      backdrop-filter: blur(10px); white-space: nowrap;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+    #toast.success { border-color: rgba(0,255,136,0.4); color: var(--success); }
+    #toast.error   { border-color: rgba(255,68,68,0.4);  color: var(--error); }
+
+    /* ===== Loading dots ===== */
+    .loading-dots { display: inline-flex; gap: 4px; }
+    .loading-dots span {
+      width: 6px; height: 6px; background: var(--accent); border-radius: 50%;
+      animation: dotBounce 1.4s infinite;
+    }
+    .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dotBounce { 0%,80%,100%{transform:scale(0.6);opacity:0.5} 40%{transform:scale(1);opacity:1} }
+
+    @media (max-width: 600px) {
+      .topbar { padding: 12px 14px; flex-wrap: wrap; gap: 8px; }
+      .main { padding: 18px 14px 40px; }
     }
   </style>
 </head>
 <body>
-  <!-- خلفية متحركة -->
-  <div class="animated-bg" id="animatedBg"></div>
-  
+  <canvas id="bgCanvas"></canvas>
+
+  <!-- Topbar -->
   <header class="topbar">
-    <div style="display:flex;align-items:center;gap:12px">
-      <button onclick="goHome()" style="background:none;border:0;color:white;font-size:20px;cursor:pointer;transition:0.3s;padding:5px;border-radius:5px;">🏠</button>
-      <div class="panel-logo" id="headerTitle"> OMAR BRO HOST</div>
+    <div class="topbar-left">
+      <button class="home-btn" onclick="goHome()" title="الرئيسية">🏠</button>
+      <div class="panel-logo" id="headerTitle">OMAR BRO HOST</div>
     </div>
-    <div style="display:flex;align-items:center;gap:15px">
-      <div class="user-info" id="userInfo">
-        <span>Welcome, <span id="usernameDisplay">User</span></span>
-        <button class="logout-btn" onclick="logout()">تسجيل الخروج</button>
+    <div class="topbar-right">
+      <div class="user-chip">
+        <span class="dot"></span>
+        <span id="usernameDisplay">User</span>
       </div>
-      <button id="newBtn" class="new-btn">+ أنشاء سرفر </button>
+      <button class="logout-btn" onclick="logout()">تسجيل الخروج</button>
+      <button id="newBtn" class="new-srv-btn">+ إنشاء سيرفر</button>
     </div>
   </header>
 
-  <main class="container" id="homeView">
-    <div id="cardsContainer"></div>
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Home View -->
+    <div id="homeView">
+      <div class="section-header">
+        <div class="section-title">🖥️ سيرفراتي</div>
+        <div class="section-count" id="serversCount">0</div>
+      </div>
+      <div id="cardsContainer"></div>
+    </div>
+
+    <!-- Server View -->
+    <div id="serverView">
+      <div class="srv-header-row">
+        <div class="srv-name" id="srvHeader">SERVER</div>
+        <div class="tab-btns">
+          <button class="tab-btn active" id="tabConsole" onclick="switchTab('console')">⚡ Console</button>
+          <button class="tab-btn" id="tabFiles" onclick="switchTab('files')">📁 File Manager</button>
+        </div>
+      </div>
+
+      <!-- Console Tab -->
+      <div id="viewConsole" class="console-layout">
+        <div class="console-box" id="logOut">
+          <div class="loading-dots"><span></span><span></span><span></span></div>
+          Initializing console...
+        </div>
+        <div class="sidebar">
+          <button id="btnStart" class="action-btn" style="background:var(--gradient)" onclick="srvAction('start')">▶ START</button>
+          <button id="btnRestart" class="action-btn" style="background:rgba(30,40,60,0.9);border:1px solid rgba(0,212,255,0.2)" onclick="srvAction('restart')">🔄 RESTART</button>
+          <button class="action-btn" style="background:rgba(255,68,68,0.15);border:1px solid rgba(255,68,68,0.3);color:var(--error)" onclick="srvAction('stop')">⏹ STOP</button>
+
+          <div class="stat-widget">
+            <div class="stat-icon">⚡</div>
+            <div class="stat-info">
+              <small>STATUS</small>
+              <b id="statusTxt" class="status-offline">Offline</b>
+            </div>
+          </div>
+          <div class="stat-widget">
+            <div class="stat-icon">🧠</div>
+            <div class="stat-info">
+              <small>RAM USAGE</small>
+              <b id="memTxt">0 MB</b>
+            </div>
+          </div>
+          <div class="stat-widget" style="cursor:pointer" onclick="changeStartup()">
+            <div class="stat-icon">💿</div>
+            <div class="stat-info">
+              <small>MAIN FILE</small>
+              <b id="mainFileTxt" style="color:var(--accent)">Not Set</b>
+            </div>
+          </div>
+          <div class="stat-widget">
+            <div class="stat-icon">🌐</div>
+            <div class="stat-info">
+              <small>IP ADDRESS</small>
+              <b id="ipTxt">127.0.0.1</b>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Files Tab -->
+      <div id="viewFiles" style="display:none">
+        <div class="files-header">
+          <div class="files-title">📁 مدير الملفات</div>
+          <div class="files-actions">
+            <button class="file-action-btn primary" onclick="document.getElementById('fileInput').click()">📤 رفع ملف</button>
+            <button class="file-action-btn" onclick="loadFiles()">🔄 تحديث</button>
+          </div>
+        </div>
+
+        <!-- Upload Zone -->
+        <div class="upload-zone" id="uploadZone"
+             ondragover="handleDragOver(event)"
+             ondragleave="handleDragLeave(event)"
+             ondrop="handleDrop(event)">
+          <div class="upload-zone-icon">🚀</div>
+          <div class="upload-zone-text">اسحب الملفات هنا أو انقر للاختيار</div>
+          <div class="upload-zone-hint">يدعم ملفات متعددة · يتم الرفع تلقائياً</div>
+          <input type="file" class="file-input-hidden" id="fileInput" multiple onchange="handleFileSelect(this)">
+          <div class="upload-progress" id="uploadProgress">
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <div class="upload-status" id="uploadStatus">جاري الرفع...</div>
+          </div>
+        </div>
+
+        <!-- Files Table -->
+        <table class="files-table">
+          <thead>
+            <tr>
+              <th>اسم الملف</th>
+              <th>الحجم</th>
+              <th>الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="serverFileList"></tbody>
+        </table>
+      </div>
+    </div>
   </main>
 
-  <main class="container" id="serverView" style="display:none">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-      <h1 id="srvHeader" style="margin:0;color:var(--accent);font-size:24px;">SERVER</h1>
-      <div style="display:flex;gap:10px">
-        <button id="tabC" class="new-btn" onclick="switchTab('console')">Console</button>
-        <button id="tabF" class="new-btn" style="background:rgba(34,34,34,0.8);color:white" onclick="switchTab('files')">File Manager</button>
-      </div>
-    </div>
-
-    <div id="viewConsole" class="mgr-grid">
-      <div class="console-box" id="logOut">
-        <div class="loading-dots">
-          <span></span><span></span><span></span>
-        </div>
-        Initializing console...
-      </div>
-      <div>
-        <button id="btnStart" class="btn-act" style="background:var(--gradient)" onclick="srvAction('start')">START</button>
-        <button id="btnRestart" class="btn-act" style="background:rgba(43,49,58,0.8)" onclick="srvAction('restart')">RESTART</button>
-        <button class="btn-act" style="background:var(--error)" onclick="srvAction('stop')">STOP</button>
-        
-        <div class="stat-card">
-          <div style="font-size:20px;">⚡</div>
-          <div>
-            <small style="color:var(--muted)">STATUS</small><br>
-            <b id="statusTxt" class="status-offline">Offline</b>
-          </div>
-        </div>
-        
-        <div class="stat-card">
-          <div style="font-size:20px;">🧠</div>
-          <div>
-            <small style="color:var(--muted)">RAM USAGE</small><br>
-            <b id="memTxt">0 MB</b>
-          </div>
-        </div>
-        
-        <div class="stat-card">
-          <div style="font-size:20px;">💿</div>
-          <div>
-            <small style="color:var(--muted)">MAIN FILE</small><br>
-            <b id="mainFileTxt" style="color:var(--accent);cursor:pointer" onclick="changeStartup()">Not Set</b>
-          </div>
-        </div>
-        
-        <div class="stat-card">
-          <div style="font-size:20px;">🌐</div>
-          <div>
-            <small style="color:var(--muted)">IP ADDRESS</small><br>
-            <b id="ipTxt">127.0.0.1</b>
-          </div>
+  <!-- Editor Modal -->
+  <div id="editorModal">
+    <div class="editor-wrap">
+      <div class="editor-header">
+        <span class="editor-filename" id="edTitle">Editing: —</span>
+        <div class="editor-actions">
+          <button class="editor-btn save" onclick="saveFile()">💾 حفظ</button>
+          <button class="editor-btn close" onclick="closeEditor()">✕ إغلاق</button>
         </div>
       </div>
-    </div>
-
-    <div id="viewFiles" style="display:none">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-        <h3 style="color:var(--accent);margin:0">Files Manager</h3>
-        <div style="display:flex;gap:10px">
-          <button class="new-btn" onclick="document.getElementById('fileInput').click()">📁 رفع ملف </button>
-          <button class="new-btn" onclick="loadFiles()" style="background:rgba(34,34,34,0.8)"</button>
-        </div>
+      <textarea id="edArea" spellcheck="false"></textarea>
+      <div class="editor-statusbar">
+        <span id="edLines">Lines: 0</span>
+        <span id="edChars">Chars: 0</span>
+        <span>UTF-8</span>
       </div>
-      
-      <!-- منطقة رفع الملفات التلقائي -->
-      <div class="upload-area" id="uploadArea" 
-           ondragover="handleDragOver(event)" 
-           ondragleave="handleDragLeave(event)" 
-           ondrop="handleDrop(event)">
-        <div class="upload-icon">🚀</div>
-        <div class="upload-text">يمكنك التحكم في ملفاتك بشكل كامل</div>
-        <div class="upload-hint">سيتم رفع الملفات تلقائياً عند الاختيار (يدعم ملفات متعددة)</div>
-        <input type="file" class="file-input" id="fileInput" multiple 
-               onchange="handleFileSelect(this)">
-        
-        <!-- مؤشر التقدم -->
-        <div class="upload-progress" id="uploadProgress">
-          <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
-          </div>
-          <div class="upload-status" id="uploadStatus">جاري الرفع...</div>
-        </div>
-      </div>
-      
-      <!-- قائمة الملفات -->
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Size</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="serverFileList"></tbody>
-      </table>
-    </div>
-  </main>
-
-  <div id="editor-modal">
-    <div class="editor-cnt">
-      <div style="padding:15px; border-bottom: 1px solid #333; display:flex; justify-content: space-between; align-items:center;background:#0a0e14;">
-        <span id="ed-title" style="font-weight:bold; color:var(--accent);"></span>
-        <div style="display:flex; gap:10px;">
-          <button class="new-btn" onclick="saveFile()">💾 Save</button>
-          <button class="new-btn" style="background:var(--error);color:white" onclick="closeEditor()">❌ Exit</button>
-        </div>
-      </div>
-      <textarea id="ed-area" spellcheck="false"></textarea>
     </div>
   </div>
 
+  <!-- Confirm Modal -->
   <div id="modalBackdrop" class="modal-backdrop">
     <div class="modal">
-      <h3 id="mTitle">Title</h3>
-      <input id="mIn" placeholder="Enter value...">
-      <div style="text-align:right;margin-top:20px;display:flex;gap:10px;justify-content:flex-end">
-        <button class="new-btn" style="background:transparent;color:var(--muted);border:1px solid var(--muted)" onclick="closeM()">Cancel</button>
-        <button id="mConfirm" class="new-btn">Confirm</button>
+      <h3 id="mTitle">—</h3>
+      <input id="mIn" placeholder="أدخل القيمة...">
+      <div class="modal-btns">
+        <button class="modal-btn cancel" onclick="closeM()">إلغاء</button>
+        <button class="modal-btn confirm" id="mConfirm">تأكيد</button>
       </div>
     </div>
   </div>
 
-  <script>
-    let currentSrv = null, poll = null, isRunning = false, currentFile = null;
-    let currentUsername = "";
-    let animationsEnabled = true;
-    let isUploading = false;
+  <!-- Toast -->
+  <div id="toast"></div>
 
-    // إنشاء الخلفية المتحركة
-    function createAnimatedBackground() {
-      if (!animationsEnabled) return;
-      
-      const container = document.getElementById('animatedBg');
-      if (!container) return;
-      
-      container.innerHTML = '';
-      
-      for (let i = 0; i < 8; i++) {
-        const line = document.createElement('div');
-        line.className = 'animated-line';
-        line.style.top = `${Math.random() * 100}%`;
-        line.style.left = `${Math.random() * 100}%`;
-        line.style.width = `${200 + Math.random() * 300}px`;
-        line.style.height = `${1 + Math.random() * 2}px`;
-        line.style.animationDelay = `${Math.random() * 15}s`;
-        line.style.animationDuration = `${20 + Math.random() * 20}s`;
-        container.appendChild(line);
+  <script>
+    /* ===== Canvas BG ===== */
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
+    let W, H, particles = [];
+
+    function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+
+    class Particle {
+      constructor() { this.reset(); }
+      reset() {
+        this.x = Math.random()*W; this.y = Math.random()*H;
+        this.vx = (Math.random()-0.5)*0.3; this.vy = (Math.random()-0.5)*0.3;
+        this.r = Math.random()*1.2+0.3; this.alpha = Math.random()*0.25+0.05;
+        this.color = ['#00d4ff','#0066ff','#00aaff'][Math.floor(Math.random()*3)];
+      }
+      update() {
+        this.x+=this.vx; this.y+=this.vy;
+        if(this.x<0||this.x>W||this.y<0||this.y>H) this.reset();
+      }
+      draw() {
+        ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+        ctx.fillStyle=this.color; ctx.globalAlpha=this.alpha; ctx.fill(); ctx.globalAlpha=1;
       }
     }
 
-    // التحقق من المستخدم
+    function initParticles() { particles=[]; for(let i=0;i<100;i++) particles.push(new Particle()); }
+
+    function drawLines() {
+      for(let i=0;i<particles.length;i++) {
+        for(let j=i+1;j<particles.length;j++) {
+          const dx=particles[i].x-particles[j].x, dy=particles[i].y-particles[j].y;
+          const d=Math.sqrt(dx*dx+dy*dy);
+          if(d<90) {
+            ctx.beginPath(); ctx.moveTo(particles[i].x,particles[i].y);
+            ctx.lineTo(particles[j].x,particles[j].y); ctx.strokeStyle='#00d4ff';
+            ctx.globalAlpha=(1-d/90)*0.06; ctx.lineWidth=0.5; ctx.stroke(); ctx.globalAlpha=1;
+          }
+        }
+      }
+    }
+
+    function animate() {
+      ctx.clearRect(0,0,W,H);
+      particles.forEach(p=>{p.update();p.draw()});
+      drawLines(); requestAnimationFrame(animate);
+    }
+
+    resize(); initParticles(); animate();
+    window.addEventListener('resize',()=>{resize();initParticles();});
+
+    /* ===== State ===== */
+    let currentSrv = null, poll = null, isRunning = false, currentFile = null;
+    let currentUsername = '', isUploading = false;
+
+    /* ===== Toast ===== */
+    function showToast(msg, type='') {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.className = 'show '+(type||'');
+      clearTimeout(t._timer);
+      t._timer = setTimeout(()=>{ t.className=''; },3000);
+    }
+
+    /* ===== Auth ===== */
     async function checkAuth() {
       try {
         const r = await fetch('/api/current_user');
         const d = await r.json();
-        if (!d.success || !d.logged_in) {
-          window.location.href = '/login';
-          return;
-        }
+        if(!d.success) { window.location.href='/login'; return; }
         currentUsername = d.username;
-        
-        const usernameDisplay = document.getElementById('usernameDisplay');
-        usernameDisplay.textContent = d.username;
-        
-        if (d.has_remember_token) {
-          usernameDisplay.innerHTML = `${d.username} <span style="font-size:10px;color:var(--accent);margin-left:5px;animation:pulse 2s infinite">●</span>`;
-        }
-        
-        createAnimatedBackground();
+        document.getElementById('usernameDisplay').textContent = d.username;
         loadServers();
-        
-      } catch (error) {
-        window.location.href = '/login';
-      }
+      } catch(e) { window.location.href='/login'; }
     }
 
     async function logout() {
-      if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
-        const btn = document.querySelector('.logout-btn');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = 'جاري تسجيل الخروج...';
-        btn.disabled = true;
-        
-        await fetch('/api/logout', { method: 'POST' });
-        window.location.href = '/login';
-      }
+      if(!confirm('هل أنت متأكد من تسجيل الخروج؟')) return;
+      const btn = document.querySelector('.logout-btn');
+      btn.textContent = 'جاري الخروج...'; btn.disabled = true;
+      await fetch('/api/logout',{method:'POST'});
+      window.location.href = '/login';
     }
 
+    /* ===== Servers ===== */
     async function loadServers() {
       try {
-        const r = await fetch('/servers'); 
-        if (r.status === 401) {
-          window.location.href = '/login';
-          return;
-        }
+        const r = await fetch('/servers');
+        if(r.status===401) { window.location.href='/login'; return; }
         const d = await r.json();
-        const cont = document.getElementById('cardsContainer'); 
+        const cont = document.getElementById('cardsContainer');
+        const count = document.getElementById('serversCount');
         cont.innerHTML = '';
-        
-        if (!d.servers || d.servers.length === 0) {
+
+        if(!d.servers||d.servers.length===0) {
+          count.textContent = '0';
           cont.innerHTML = `
-            <div style="grid-column: 1 / -1; text-align: center; padding: 50px; position: relative;">
-              <div style="font-size: 48px; margin-bottom: 20px; animation: pulse 2s infinite;">📂</div>
-              <h3 style="margin-bottom: 10px; color: var(--accent);">لا توجد خوادم</h3>
-              <p style="color: var(--muted); margin-bottom: 20px;">أنشئ خادمك الأول باستخدام زر "+ أنشاء سرفر"</p>
-              <div style="display: flex; justify-content: center; gap: 10px;">
-                <div style="width: 10px; height: 10px; background: var(--accent); border-radius: 50%; animation: pulse 1s infinite;"></div>
-                <div style="width: 10px; height: 10px; background: var(--accent); border-radius: 50%; animation: pulse 1s infinite 0.2s;"></div>
-                <div style="width: 10px; height: 10px; background: var(--accent); border-radius: 50%; animation: pulse 1s infinite 0.4s;"></div>
-              </div>
-            </div>
-          `;
+            <div class="empty-state">
+              <div class="empty-icon">📂</div>
+              <h3>لا توجد سيرفرات</h3>
+              <p>أنشئ سيرفرك الأول باستخدام زر "+ إنشاء سيرفر"</p>
+            </div>`;
           return;
         }
-        
-        d.servers.forEach((s, index) => {
-          const div = document.createElement('div'); 
-          div.className = 'card';
-          div.style.animationDelay = `${index * 0.1}s`;
+
+        count.textContent = d.servers.length;
+        d.servers.forEach((s,i) => {
+          const div = document.createElement('div');
+          div.className = 'srv-card';
+          div.style.animationDelay = i*0.08+'s';
           div.innerHTML = `
-            <div class="srv-icon"></div>
-            <div class="card-title">${s.title}</div>
-            <div class="card-sub">${s.subtitle}</div>
-            <div style="margin-top: 10px; font-size: 10px; color: var(--accent); opacity: 0.7;">
-              ${s.startup_file ? '⚡' : '⭕'} ${s.startup_file || 'No main file'}
-            </div>
-          `;
-          div.onclick = () => openServer(s); 
+            <div class="srv-icon-wrap">🖥️</div>
+            <div class="srv-card-title">${s.title}</div>
+            <div class="srv-card-sub">${s.subtitle}</div>
+            <div class="srv-card-file">${s.startup_file ? '⚡ '+s.startup_file : '⭕ No main file'}</div>`;
+          div.onclick = ()=>openServer(s);
           cont.appendChild(div);
         });
-        
-      } catch (error) {
-        console.error('Error loading servers:', error);
-      }
+      } catch(e) { console.error(e); }
     }
 
     function openServer(s) {
-      currentSrv = s; 
+      currentSrv = s;
       document.getElementById('homeView').style.display = 'none';
       document.getElementById('newBtn').style.display = 'none';
-      document.getElementById('serverView').style.display = 'block'; 
+      document.getElementById('serverView').style.display = 'block';
       document.getElementById('srvHeader').textContent = s.title;
-      document.getElementById('mainFileTxt').textContent = s.startup_file || "Click to set"; 
+      document.getElementById('mainFileTxt').textContent = s.startup_file || 'Click to set';
       switchTab('console');
     }
 
-    function goHome() { 
-      document.getElementById('homeView').style.display = 'block'; 
-      document.getElementById('newBtn').style.display = 'block'; 
-      document.getElementById('serverView').style.display = 'none'; 
-      clearInterval(poll);
-      loadServers();
+    function goHome() {
+      document.getElementById('homeView').style.display = 'block';
+      document.getElementById('newBtn').style.display = 'block';
+      document.getElementById('serverView').style.display = 'none';
+      clearInterval(poll); loadServers();
     }
 
+    /* ===== Tabs ===== */
     function switchTab(t) {
-      document.getElementById('viewConsole').style.display = t === 'console' ? 'grid' : 'none';
-      document.getElementById('viewFiles').style.display = t === 'files' ? 'block' : 'none';
-      if (t === 'console') {
-        startPolling();
-      } else {
-        clearInterval(poll);
-        loadFiles();
-      }
+      document.getElementById('viewConsole').style.display = t==='console' ? 'grid' : 'none';
+      document.getElementById('viewFiles').style.display   = t==='files'   ? 'block' : 'none';
+      document.getElementById('tabConsole').className = 'tab-btn'+(t==='console'?' active':'');
+      document.getElementById('tabFiles').className   = 'tab-btn'+(t==='files'  ?' active':'');
+      if(t==='console') startPolling(); else { clearInterval(poll); loadFiles(); }
     }
 
+    /* ===== Console Polling ===== */
     async function startPolling() {
-      if (poll) clearInterval(poll);
-      
+      if(poll) clearInterval(poll);
       const fn = async () => {
         try {
           const r = await fetch(`/server/stats/${currentSrv.folder}`);
-          if (r.status === 401) {
-            window.location.href = '/login';
-            return;
-          }
+          if(r.status===401) { window.location.href='/login'; return; }
           const d = await r.json();
-          
-          document.getElementById('logOut').textContent = d.logs || "يتم قراءة ملفك...";
+          const lo = document.getElementById('logOut');
+          lo.textContent = d.logs || 'Waiting for output...';
           document.getElementById('statusTxt').textContent = d.status;
           document.getElementById('memTxt').textContent = d.mem;
-          document.getElementById('ipTxt').textContent = d.ip || '127.0.0.1';
-          
-          isRunning = d.status === "Running";
+          document.getElementById('ipTxt').textContent = d.ip||'127.0.0.1';
+          isRunning = d.status==='Running';
           const btnStart = document.getElementById('btnStart');
-          const statusTxt = document.getElementById('statusTxt');
-          
-          if (isRunning) {
-            btnStart.className = 'btn-act running';
-            btnStart.disabled = true;
-            statusTxt.className = 'status-running';
+          const statusEl = document.getElementById('statusTxt');
+          if(isRunning) {
+            btnStart.className='action-btn disabled'; btnStart.disabled=true;
+            btnStart.style.background='rgba(0,255,136,0.15)'; btnStart.style.color='var(--success)';
+            statusEl.className='status-running';
           } else {
-            btnStart.className = 'btn-act';
-            btnStart.disabled = false;
-            btnStart.style.background = 'var(--gradient)';
-            statusTxt.className = 'status-offline';
+            btnStart.className='action-btn'; btnStart.disabled=false;
+            btnStart.style.background='var(--gradient)'; btnStart.style.color='#001a2e';
+            statusEl.className='status-offline';
           }
-          
-          const lo = document.getElementById('logOut'); 
           lo.scrollTop = lo.scrollHeight;
-          
-        } catch(e) {
-          console.error('Polling error:', e);
-        }
+        } catch(e) {}
       };
-      
-      fn(); 
-      poll = setInterval(fn, 2000);
+      fn(); poll = setInterval(fn,2000);
     }
 
+    /* ===== Server Actions ===== */
     async function srvAction(act) {
-      if (act === 'start' && isRunning) return;
-      
+      if(act==='start'&&isRunning) return;
       const btn = document.querySelector(`button[onclick="srvAction('${act}')"]`);
-      const originalText = btn.innerHTML;
+      const orig = btn.innerHTML;
       btn.innerHTML = '<span class="loading-dots"><span></span><span></span><span></span></span>';
       btn.disabled = true;
-      
       try {
-        const r = await fetch(`/server/action/${currentSrv.folder}/${act}`, { method: 'POST' });
-        if (r.status === 401) {
-          window.location.href = '/login';
-          return;
-        }
-      } catch (error) {
-        console.error('Action error:', error);
-      } finally {
-        setTimeout(() => {
-          btn.innerHTML = originalText;
-          btn.disabled = false;
-        }, 1000);
-      }
+        const r = await fetch(`/server/action/${currentSrv.folder}/${act}`,{method:'POST'});
+        if(r.status===401) { window.location.href='/login'; return; }
+        showToast(act==='start'?'✅ تم تشغيل السيرفر':act==='stop'?'⏹ تم إيقاف السيرفر':'🔄 تم إعادة التشغيل','success');
+      } catch(e) { showToast('⚠️ خطأ في تنفيذ الأمر','error'); }
+      finally { setTimeout(()=>{btn.innerHTML=orig;btn.disabled=false;},1000); }
     }
 
+    /* ===== Files ===== */
     async function loadFiles() {
       try {
         const r = await fetch(`/files/list/${currentSrv.folder}`);
-        if (r.status === 401) {
-          window.location.href = '/login';
+        if(r.status===401) { window.location.href='/login'; return; }
+        const files = await r.json();
+        const tbody = document.getElementById('serverFileList');
+        if(files.length===0) {
+          tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:30px;color:var(--muted)">لا توجد ملفات</td></tr>';
           return;
         }
-        const files = await r.json();
-        
-        const fileList = document.getElementById('serverFileList');
-        fileList.innerHTML = files.map(f => `
+        tbody.innerHTML = files.map(f => `
           <tr>
-            <td style="color:var(--accent);cursor:pointer" onclick="openEditor('${f.name}')">
-              📄 ${f.name}
-            </td>
-            <td>${f.size}</td>
+            <td><span class="file-name" onclick="openEditor('${f.name}')">📄 ${f.name}</span></td>
+            <td style="color:var(--muted)">${f.size}</td>
             <td>
-              ${f.name === 'requirements.txt' ? 
-                `<button class="f-btn" style="background:var(--accent);color:black" onclick="installReq()">📦 Install</button>` : ''}
-              <button class="f-btn" onclick="renameF('${f.name}')">✏️ Rename</button>
-              <button class="f-btn" style="background:var(--error)" onclick="deleteF('${f.name}')">🗑️ Delete</button>
+              ${f.name==='requirements.txt'?`<button class="f-btn install" onclick="installReq()">📦 Install</button>`:''}
+              <button class="f-btn set-main" onclick="setAsMain('${f.name}')">⭐ Main</button>
+              <button class="f-btn rename" onclick="renameF('${f.name}')">✏️ Rename</button>
+              <button class="f-btn delete" onclick="deleteF('${f.name}')">🗑️ Delete</button>
             </td>
-          </tr>
-        `).join('');
-      } catch (error) {
-        console.error('Error loading files:', error);
-      }
+          </tr>`).join('');
+      } catch(e) { console.error(e); }
     }
 
     async function installReq() {
-      await fetch(`/files/install/${currentSrv.folder}`, { method: 'POST' });
+      await fetch(`/files/install/${currentSrv.folder}`,{method:'POST'});
+      showToast('📦 جاري تثبيت المكتبات...','');
       switchTab('console');
     }
 
+    async function setAsMain(name) {
+      await fetch(`/server/set-startup/${currentSrv.folder}`,{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({file:name})
+      });
+      currentSrv.startup_file = name;
+      document.getElementById('mainFileTxt').textContent = name;
+      showToast(`✅ تم تعيين "${name}" كملف رئيسي`,'success');
+    }
+
+    /* ===== Editor ===== */
     async function openEditor(name) {
       currentFile = name;
-      document.getElementById('ed-title').innerText = `Editing: ${name}`;
-      
+      document.getElementById('edTitle').textContent = 'Editing: '+name;
       try {
         const res = await fetch(`/files/content/${currentSrv.folder}/${name}`);
         const data = await res.json();
-        document.getElementById('ed-area').value = data.content;
-        document.getElementById('editor-modal').style.display = 'block';
-        document.getElementById('ed-area').focus();
-      } catch (error) {
-        alert('Error opening file');
-      }
+        const area = document.getElementById('edArea');
+        area.value = data.content;
+        updateEditorStats();
+        document.getElementById('editorModal').style.display = 'block';
+        area.focus();
+      } catch(e) { showToast('❌ خطأ في فتح الملف','error'); }
     }
 
     async function saveFile() {
       try {
-        await fetch(`/files/save/${currentSrv.folder}/${currentFile}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: document.getElementById('ed-area').value })
+        await fetch(`/files/save/${currentSrv.folder}/${currentFile}`,{
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({content:document.getElementById('edArea').value})
         });
-        alert("✅ File Saved Successfully");
-      } catch (error) {
-        alert('❌ Error saving file');
-      }
+        showToast('💾 تم حفظ الملف بنجاح','success');
+      } catch(e) { showToast('❌ خطأ في الحفظ','error'); }
     }
 
-    function closeEditor() { 
-      document.getElementById('editor-modal').style.display = 'none'; 
+    function closeEditor() { document.getElementById('editorModal').style.display='none'; }
+
+    function updateEditorStats() {
+      const val = document.getElementById('edArea').value;
+      document.getElementById('edLines').textContent = 'Lines: '+(val.split('\n').length);
+      document.getElementById('edChars').textContent = 'Chars: '+val.length;
     }
 
-    function changeStartup() { 
-      openM("Set Main File", currentSrv.startup_file, async (v) => { 
-        await fetch(`/server/set-startup/${currentSrv.folder}`, {
-          method: 'POST', 
-          headers: { 'Content-Type': 'application/json' }, 
-          body: JSON.stringify({ file: v })
-        }); 
-        currentSrv.startup_file = v; 
-        document.getElementById('mainFileTxt').textContent = v; 
-        closeM(); 
-      }); 
-    }
+    document.addEventListener('DOMContentLoaded',()=>{
+      document.getElementById('edArea').addEventListener('input', updateEditorStats);
+    });
 
-    function renameF(old) { 
-      openM("Rename File", old, async (v) => { 
-        await fetch(`/files/rename/${currentSrv.folder}`, {
-          method: 'POST', 
-          headers: { 'Content-Type': 'application/json' }, 
-          body: JSON.stringify({ old, new: v })
-        }); 
-        loadFiles(); 
-        closeM(); 
-      }); 
-    }
-
-    async function deleteF(name) { 
-      if (confirm(`⚠️ Delete ${name}? This action cannot be undone.`)) { 
-        await fetch(`/files/delete/${currentSrv.folder}`, {
-          method: 'POST', 
-          headers: { 'Content-Type': 'application/json' }, 
-          body: JSON.stringify({ name })
-        }); 
-        loadFiles(); 
-      } 
-    }
-
-    // ============ رفع الملفات التلقائي ============
-
+    /* ===== Upload ===== */
     function handleDragOver(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      document.getElementById('uploadArea').classList.add('dragover');
+      e.preventDefault(); e.stopPropagation();
+      document.getElementById('uploadZone').classList.add('dragover');
     }
-
     function handleDragLeave(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      document.getElementById('uploadArea').classList.remove('dragover');
+      e.preventDefault(); e.stopPropagation();
+      document.getElementById('uploadZone').classList.remove('dragover');
     }
-
     function handleDrop(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      document.getElementById('uploadArea').classList.remove('dragover');
-      
-      if (e.dataTransfer.files.length > 0) {
-        uploadFiles(Array.from(e.dataTransfer.files));
-      }
+      e.preventDefault(); e.stopPropagation();
+      document.getElementById('uploadZone').classList.remove('dragover');
+      if(e.dataTransfer.files.length>0) uploadFiles(Array.from(e.dataTransfer.files));
     }
-
     function handleFileSelect(input) {
-      if (input.files.length > 0) {
-        uploadFiles(Array.from(input.files));
-      }
+      if(input.files.length>0) uploadFiles(Array.from(input.files));
     }
 
     async function uploadFiles(files) {
-      if (files.length === 0 || isUploading) return;
-      
+      if(files.length===0||isUploading) return;
       isUploading = true;
-      const uploadArea = document.getElementById('uploadArea');
-      const progressDiv = document.getElementById('uploadProgress');
-      const progressFill = document.getElementById('progressFill');
-      const uploadStatus = document.getElementById('uploadStatus');
-      
-      // إظهار مؤشر التقدم
-      uploadArea.style.opacity = '0.8';
-      progressDiv.style.display = 'block';
-      progressFill.style.width = '0%';
-      uploadStatus.textContent = `جاري رفع ${files.length} ملف...`;
-      
+      const zone = document.getElementById('uploadZone');
+      const prog = document.getElementById('uploadProgress');
+      const fill = document.getElementById('progressFill');
+      const status = document.getElementById('uploadStatus');
+      zone.style.opacity='0.7'; prog.style.display='block';
+      fill.style.width='0%'; status.textContent=`جاري رفع ${files.length} ملف...`;
       try {
-        const formData = new FormData();
-        
-        // إضافة جميع الملفات
-        files.forEach((file, index) => {
-          formData.append('files[]', file);
-        });
-        
-        const response = await fetch(`/files/upload/${currentSrv.folder}`, {
-          method: 'POST',
-          body: formData
-        });
-        
-        // تحديث شريط التقدم
-        progressFill.style.width = '100%';
-        uploadStatus.textContent = 'جاري معالجة الملفات...';
-        
-        const result = await response.json();
-        
-        if (result.success) {
-          uploadStatus.textContent = `✅ تم رفع ${result.uploaded_files.length} ملف بنجاح`;
-          
-          // إعادة تحميل قائمة الملفات بعد ثانية
-          setTimeout(() => {
-            loadFiles();
-            resetUploadArea();
-          }, 1000);
+        const fd = new FormData();
+        files.forEach(f=>fd.append('files[]',f));
+        const res = await fetch(`/files/upload/${currentSrv.folder}`,{method:'POST',body:fd});
+        fill.style.width='100%'; status.textContent='جاري المعالجة...';
+        const result = await res.json();
+        if(result.success) {
+          status.textContent=`✅ تم رفع ${result.uploaded_files.length} ملف`;
+          showToast(`✅ تم رفع ${result.uploaded_files.length} ملف بنجاح`,'success');
+          setTimeout(()=>{loadFiles();resetUpload();},1000);
         } else {
-          uploadStatus.textContent = '❌ فشل رفع الملفات';
-          setTimeout(resetUploadArea, 2000);
+          status.textContent='❌ فشل الرفع'; showToast('❌ فشل رفع الملفات','error');
+          setTimeout(resetUpload,2000);
         }
-      } catch (error) {
-        console.error('Upload error:', error);
-        uploadStatus.textContent = '❌ خطأ في رفع الملفات';
-        setTimeout(resetUploadArea, 2000);
-      } finally {
-        isUploading = false;
-      }
+      } catch(e) {
+        status.textContent='❌ خطأ في الرفع'; showToast('❌ خطأ في الرفع','error');
+        setTimeout(resetUpload,2000);
+      } finally { isUploading=false; }
     }
 
-    function resetUploadArea() {
-      const uploadArea = document.getElementById('uploadArea');
-      const progressDiv = document.getElementById('uploadProgress');
-      const fileInput = document.getElementById('fileInput');
-      
-      uploadArea.style.opacity = '1';
-      progressDiv.style.display = 'none';
-      fileInput.value = '';
+    function resetUpload() {
+      document.getElementById('uploadZone').style.opacity='1';
+      document.getElementById('uploadProgress').style.display='none';
+      document.getElementById('fileInput').value='';
     }
 
-    function openM(t, v, cb) { 
-      document.getElementById('modalBackdrop').style.display = 'flex'; 
-      document.getElementById('mTitle').textContent = t; 
-      document.getElementById('mIn').value = v; 
-      document.getElementById('mConfirm').onclick = () => {
-        cb(document.getElementById('mIn').value);
-      }; 
+    /* ===== Modal ===== */
+    function changeStartup() {
+      openM('تعيين الملف الرئيسي', currentSrv.startup_file||'', async v=>{
+        await fetch(`/server/set-startup/${currentSrv.folder}`,{
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({file:v})
+        });
+        currentSrv.startup_file=v;
+        document.getElementById('mainFileTxt').textContent=v;
+        showToast('✅ تم تعيين الملف الرئيسي','success');
+        closeM();
+      });
     }
 
-    function closeM() { 
-      document.getElementById('modalBackdrop').style.display = 'none'; 
+    function renameF(old) {
+      openM('إعادة تسمية الملف', old, async v=>{
+        await fetch(`/files/rename/${currentSrv.folder}`,{
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({old,new:v})
+        });
+        showToast('✅ تم إعادة التسمية','success');
+        loadFiles(); closeM();
+      });
     }
 
-    // تهيئة عند تحميل الصفحة
-    document.addEventListener('DOMContentLoaded', function() {
+    async function deleteF(name) {
+      if(!confirm(`⚠️ حذف "${name}"؟ لا يمكن التراجع!`)) return;
+      await fetch(`/files/delete/${currentSrv.folder}`,{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({name})
+      });
+      showToast(`🗑️ تم حذف "${name}"`,'');
+      loadFiles();
+    }
+
+    function openM(t, v, cb) {
+      document.getElementById('modalBackdrop').style.display='flex';
+      document.getElementById('mTitle').textContent=t;
+      document.getElementById('mIn').value=v;
+      document.getElementById('mConfirm').onclick=()=>cb(document.getElementById('mIn').value);
+    }
+    function closeM() { document.getElementById('modalBackdrop').style.display='none'; }
+
+    /* ===== Init ===== */
+    document.addEventListener('DOMContentLoaded', ()=>{
       checkAuth();
-      
-      document.getElementById('newBtn').onclick = () => {
-        openM("New Server Name", "", async (name) => { 
-          if (!name.trim()) {
-            alert('Server name cannot be empty');
-            return;
-          }
-          
-          const btn = document.getElementById('newBtn');
-          const originalText = btn.innerHTML;
-          btn.innerHTML = 'Creating...';
-          btn.disabled = true;
-          
+      document.getElementById('newBtn').onclick = ()=>{
+        openM('اسم السيرفر الجديد','',async name=>{
+          if(!name.trim()) { showToast('⚠️ اسم السيرفر لا يمكن أن يكون فارغاً','error'); return; }
+          const btn=document.getElementById('newBtn');
+          const orig=btn.innerHTML; btn.innerHTML='جاري الإنشاء...'; btn.disabled=true;
           try {
-            await fetch('/add', {
-              method: 'POST', 
-              headers: { 'Content-Type': 'application/json' }, 
-              body: JSON.stringify({ name })
-            }); 
-            loadServers(); 
-          } catch (error) {
-            alert('Error creating server');
-          } finally {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-            closeM(); 
-          }
-        }); 
+            await fetch('/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name})});
+            showToast('✅ تم إنشاء السيرفر بنجاح','success');
+            loadServers();
+          } catch(e) { showToast('❌ خطأ في الإنشاء','error'); }
+          finally { btn.innerHTML=orig; btn.disabled=false; closeM(); }
+        });
       };
     });
 
-    // إغلاق النوافذ بالزر Escape
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-        closeEditor();
-        closeM();
+    document.addEventListener('keydown', e=>{
+      if(e.key==='Escape') { closeEditor(); closeM(); }
+      if((e.ctrlKey||e.metaKey)&&e.key==='s') {
+        e.preventDefault();
+        if(document.getElementById('editorModal').style.display==='block') saveFile();
       }
     });
   </script>
