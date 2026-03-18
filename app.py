@@ -486,15 +486,20 @@ def api_logout():
     response.delete_cookie('remember_token')
     return response
 
-@app.route("/api/me")
-def api_me():
+@app.route("/api/current_user")
+def api_current_user():
     if 'username' not in session:
-        return jsonify({"logged_in": False}), 401
+        return jsonify({"success": False, "logged_in": False}), 200
     return jsonify({
+        "success": True,
         "logged_in": True,
         "username": session['username'],
         "is_admin": is_admin(session['username'])
     })
+
+@app.route("/api/me")
+def api_me():
+    return api_current_user()
 
 # ============== Server Management ==============
 

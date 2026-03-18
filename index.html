@@ -796,7 +796,7 @@
       try {
         const r = await fetch('/api/current_user');
         const d = await r.json();
-        if (!d.success) {
+        if (!d.success || !d.logged_in) {
           window.location.href = '/login';
           return;
         }
