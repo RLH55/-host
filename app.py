@@ -503,8 +503,15 @@ def api_me():
 
 # ============== Server Management ==============
 
-@app.route("/servers/list")
+@app.route("/servers")
 def servers_list():
+    if 'username' not in session:
+        return jsonify({"servers": []}), 401
+    servers = load_servers_list()
+    return jsonify({"servers": servers})
+
+@app.route("/servers/old_list")
+def servers_old_list():
     if 'username' not in session:
         return jsonify([]), 401
     servers = load_servers_list()
@@ -527,8 +534,8 @@ def servers_list():
             s["has_log"] = os.path.exists(log_path)
     return jsonify(servers)
 
-@app.route("/servers/create", methods=["POST"])
-def create_server():
+@app.route("/add", methods=["POST"])
+def add_server():
     if 'username' not in session:
         return jsonify({"success": False}), 401
     data = request.get_json()
@@ -543,6 +550,10 @@ def create_server():
     with open(os.path.join(server_dir, "meta.json"), "w") as f:
         json.dump({"display_name": data.get("name", name), "startup_file": ""}, f)
     return jsonify({"success": True})
+
+@app.route("/servers/create", methods=["POST"])
+def create_server():
+    return add_server()
 
 @app.route("/servers/delete/<folder>", methods=["POST"])
 def delete_server(folder):
