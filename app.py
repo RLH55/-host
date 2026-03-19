@@ -230,9 +230,14 @@ def list_servers():
     if "username" not in session:
         return jsonify({"success": False}), 401
     
+    # ميزة زيارة الأدمن للسيرفر
+    admin_view = session.get("admin_viewing_server")
+    is_adm = is_admin(session["username"])
+    
     user_servers = []
     for folder, srv in db["servers"].items():
-        if srv["owner"] == session["username"]:
+        # عرض السيرفر إذا كان صاحبه أو إذا كان الأدمن يزوره
+        if srv["owner"] == session["username"] or (is_adm and folder == admin_view):
             uptime_str = "0 ثانية"
             if srv.get("status") == "Running" and srv.get("start_time"):
                 diff = time.time() - srv["start_time"]
@@ -309,7 +314,8 @@ def server_action(folder, action):
         return jsonify({"success": False}), 401
     
     srv = db["servers"].get(folder)
-    if not srv or srv["owner"] != session["username"]:
+    # السماح للأدمن بالتحكم أيضاً
+    if not srv or (srv["owner"] != session["username"] and not is_admin(session["username"])):
         return jsonify({"success": False, "message": "غير مصرح"})
     
     if action == "start":
@@ -414,7 +420,8 @@ def server_action(folder, action):
 def server_stats(folder):
     if "username" not in session: return jsonify({}), 401
     srv = db["servers"].get(folder)
-    if not srv or srv["owner"] != session["username"]: return jsonify({})
+    # السماح للأدمن بالمشاهدة أيضاً
+    if not srv or (srv["owner"] != session["username"] and not is_admin(session["username"])): return jsonify({})
     
     logs = ""
     log_path = os.path.join(srv["path"], "out.log")
@@ -453,7 +460,7 @@ def server_stats(folder):
 def list_files(folder):
     if "username" not in session: return jsonify([]), 401
     srv = db["servers"].get(folder)
-    if not srv or srv["owner"] != session["username"]: return jsonify([])
+    if not srv or (srv["owner"] != session["username"] and not is_admin(session["username"])): return jsonify([])
     
     files = []
     for f in os.listdir(srv["path"]):
@@ -471,7 +478,7 @@ def list_files(folder):
 def upload_files(folder):
     if "username" not in session: return jsonify({"success": False}), 401
     srv = db["servers"].get(folder)
-    if not srv or srv["owner"] != session["username"]: return jsonify({"success": False})
+    if not srv or (srv["owner"] != session["username"] and not is_admin(session["username"])): return jsonify({"success": False})
     
     files = request.files.getlist("files[]")
     uploaded = []
@@ -509,7 +516,7 @@ def upload_files(folder):
 def file_content(folder, filename):
     if "username" not in session: return jsonify({}), 401
     srv = db["servers"].get(folder)
-    if not srv or srv["owner"] != session["username"]: return jsonify({})
+    if not srv or (srv["owner"] != session["username"] and not is_admin(session["username"])): return jsonify({})
     
     path = os.path.join(srv["path"], re.sub(r'[^a-zA-Z0-9._\-]', '', filename))
     if os.path.exists(path):
@@ -524,7 +531,7 @@ def file_content(folder, filename):
 def save_file(folder, filename):
     if "username" not in session: return jsonify({"success": False}), 401
     srv = db["servers"].get(folder)
-    if not srv or srv["owner"] != session["username"]: return jsonify({"success": False})
+    if not srv or (srv["owner"] != session["username"] and not is_admin(session["username"])): return jsonify({"success": False})
     
     data = request.get_json()
     path = os.path.join(srv["path"], re.sub(r'[^a-zA-Z0-9._\-]', '', filename))
@@ -536,21 +543,30 @@ def save_file(folder, filename):
 def delete_file(folder):
     if "username" not in session: return jsonify({"success": False}), 401
     srv = db["servers"].get(folder)
-    if not srv or srv["owner"] != session["username"]: return jsonify({"success": False})
+    # السماح للأدمن بالحذف أيضاً
+    if not srv or (srv["owner"] != session["username"] and not is_admin(session["username"])):
+        return jsonify({"success": False, "message": "غير مصرح"})
     
     data = request.get_json()
     filenames = data.get("names", [])
     if not filenames and data.get("name"):
         filenames = [data.get("name")]
+    
+    # ميزة حذف جميع الملفات
+    if data.get("all") is True:
+        filenames = [f for f in os.listdir(srv["path"]) if f != "out.log"]
         
     deleted = []
     for filename in filenames:
-        safe_name = re.sub(r'[^a-zA-Z0-9._\-]', '', filename)
+        # تحسين الأمان مع السماح بالنقاط للملفات
+        safe_name = re.sub(r'[^\w\s\.\-]', '', filename)
         path = os.path.join(srv["path"], safe_name)
-        if os.path.exists(path):
-            if os.path.isdir(path): shutil.rmtree(path)
-            else: os.remove(path)
-            deleted.append(filename)
+        if os.path.exists(path) and os.path.abspath(path).startswith(os.path.abspath(srv["path"])):
+            try:
+                if os.path.isdir(path): shutil.rmtree(path)
+                else: os.remove(path)
+                deleted.append(filename)
+            except: pass
             
     return jsonify({"success": True, "message": f"🗑️ تم حذف {len(deleted)} ملف"})
 
@@ -558,7 +574,7 @@ def delete_file(folder):
 def rename_file(folder):
     if "username" not in session: return jsonify({"success": False}), 401
     srv = db["servers"].get(folder)
-    if not srv or srv["owner"] != session["username"]: return jsonify({"success": False})
+    if not srv or (srv["owner"] != session["username"] and not is_admin(session["username"])): return jsonify({"success": False})
     
     data = request.get_json()
     old_name = re.sub(r'[^a-zA-Z0-9._\-]', '', data.get("old_name", ""))
@@ -579,7 +595,7 @@ def rename_file(folder):
 def create_file(folder):
     if "username" not in session: return jsonify({"success": False}), 401
     srv = db["servers"].get(folder)
-    if not srv or srv["owner"] != session["username"]: return jsonify({"success": False})
+    if not srv or (srv["owner"] != session["username"] and not is_admin(session["username"])): return jsonify({"success": False})
     
     data = request.get_json()
     filename = re.sub(r'[^a-zA-Z0-9._\-]', '', data.get("filename", ""))
@@ -597,27 +613,41 @@ def create_file(folder):
 def install_requirements(folder):
     if "username" not in session: return jsonify({"success": False}), 401
     srv = db["servers"].get(folder)
-    if not srv or srv["owner"] != session["username"]: return jsonify({"success": False})
+    if not srv or (srv["owner"] != session["username"] and not is_admin(session["username"])):
+        return jsonify({"success": False})
     
     req_file = os.path.join(srv["path"], "requirements.txt")
     if os.path.exists(req_file):
         try:
             log_path = os.path.join(srv["path"], "out.log")
+            # استخدام وضع الكتابة 'w' لتصفير اللوق عند البدء أو 'a' مع التأكد من القراءة
+            with open(log_path, "a", encoding='utf-8') as f:
+                f.write("\n\n--- 📦 جاري تثبيت المكتبات ---\n")
+            
             log_file = open(log_path, "a", encoding='utf-8')
-            log_file.write("\n📦 جاري تثبيت المكتبات...\n")
-            log_file.flush()
+            # إزالة --quiet لرؤية التقدم في الكونسول
             subprocess.Popen(
-                [sys.executable, "-m", "pip", "install", "-r", "requirements.txt", "--quiet"],
+                [sys.executable, "-m", "pip", "install", "-r", "requirements.txt"],
                 cwd=srv["path"],
                 stdout=log_file,
                 stderr=subprocess.STDOUT
             )
-            return jsonify({"success": True, "message": "📦 بدأ تثبيت المكتبات في الخلفية، تابع الكونسول"})
+            return jsonify({"success": True, "message": "📦 بدأ تثبيت المكتبات، تابع الكونسول"})
         except Exception as e:
             return jsonify({"success": False, "message": str(e)})
     return jsonify({"success": False, "message": "❌ ملف requirements.txt غير موجود"})
 
 # ============== ADMIN APIs ==============
+@app.route('/api/admin/visit-server/<folder>')
+def admin_visit_server(folder):
+    if "username" not in session or not is_admin(session["username"]):
+        return jsonify({}), 403
+    srv = db["servers"].get(folder)
+    if not srv: return jsonify({"success": False}), 404
+    # تخزين السيرفر المستهدف في الجلسة للأدمن
+    session["admin_viewing_server"] = folder
+    return jsonify({"success": True, "redirect": "/dashboard"})
+
 @app.route('/api/admin/all-servers')
 def admin_all_servers():
     if "username" not in session or not is_admin(session["username"]):

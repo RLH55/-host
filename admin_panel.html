@@ -430,6 +430,7 @@
                     <td><span style="color: #00d4ff; font-size: 12px;">${s.port || '—'}</span></td>
                     <td style="font-size: 11px; color: #8899aa;">${(s.created_at || '').substring(0, 10)}</td>
                     <td>
+                        <button class="btn-action btn-edit" onclick="visitServer('${s.folder}')">👁️ زيارة</button>
                         <button class="btn-action btn-console" onclick="openConsole('${s.folder}', '${s.name || s.folder}')">🖥️ كونسول</button>
                         ${s.status !== 'Running' ? `<button class="btn-action btn-start" onclick="quickAction('${s.folder}', 'start')">▶ تشغيل</button>` : `<button class="btn-action btn-stop" onclick="quickAction('${s.folder}', 'stop')">⏹ إيقاف</button>`}
                     </td>
@@ -443,6 +444,14 @@
                 (s.name || s.folder).toLowerCase().includes(q) || 
                 s.owner.toLowerCase().includes(q)
             ));
+        }
+
+        async function visitServer(folder) {
+            const res = await fetch(`/api/admin/visit-server/${folder}`);
+            const data = await res.json();
+            if (data.success) {
+                window.location.href = data.redirect;
+            }
         }
 
         async function openConsole(folder, name) {

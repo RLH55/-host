@@ -796,6 +796,7 @@
                         <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this.checked)" class="file-checkbox">
                         <span style="font-size: 13px; color: #8899aa;">تحديد الكل</span>
                         <button class="btn-small btn-danger-small" onclick="deleteSelectedFiles()">🗑️ حذف المحدد</button>
+                        <button class="btn-small btn-danger-small" onclick="deleteAllFiles()">🔥 حذف الكل</button>
                         <button class="btn-small btn-success-small" onclick="installLibs()">📦 تحميل المكاتب</button>
                         <button class="btn-small btn-info-small" onclick="showCreateFileModal()">➕ ملف جديد</button>
                     </div>
@@ -1126,6 +1127,19 @@
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({names: selected})
+                });
+                const data = await res.json();
+                showToast(data.message, 'success');
+                loadFiles();
+            });
+        }
+
+        async function deleteAllFiles() {
+            showConfirm('🔥', 'حذف جميع الملفات', 'هل أنت متأكد من حذف جميع ملفات السيرفر؟ لا يمكن التراجع!', 'حذف الكل', async () => {
+                const res = await fetch(`/api/files/delete/${currentServer.folder}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({all: true})
                 });
                 const data = await res.json();
                 showToast(data.message, 'success');
