@@ -135,7 +135,7 @@ def delete_all_user_tokens(username):
     with open(REMEMBER_TOKENS_FILE, "w", encoding="utf-8") as f:
         json.dump(tokens, f, indent=2)
 
-def register_user(username, password, created_by_admin=False):
+def register_user(username, password, created_by_admin=False, max_servers=3, expiry_days=30):
     init_users_db()
     with open(USERS_FILE, "r", encoding="utf-8") as f:
         users = json.load(f)
@@ -153,7 +153,9 @@ def register_user(username, password, created_by_admin=False):
         "theme": "blue",
         "is_admin": username == ADMIN_USERNAME,
         "created_by_admin": created_by_admin,
-        "created_by": session.get('username') if 'username' in session else None
+        "created_by": session.get('username') if 'username' in session else None,
+        "max_servers": max_servers,
+        "expiry_days": expiry_days
     }
     
     with open(USERS_FILE, "w", encoding="utf-8") as f:
@@ -254,18 +256,22 @@ def load_servers_list():
         meta_path = os.path.join(user_servers_dir, folder, "meta.json")
         display_name, startup_file = folder, ""
         try:
-            with open(meta_path, "r", encoding="utf-8") as f:
-                meta = json.load(f)
-                display_name = meta.get("display_name", folder)
-                startup_file = meta.get("startup_file", "")
+            if os.path.exists(meta_path):
+                with open(meta_path, "r", encoding="utf-8") as f:
+                    meta = json.load(f)
+                    display_name = meta.get("display_name", folder)
+                    startup_file = meta.get("startup_file", "main.py")
         except: 
             pass
         servers.append({
             "id": i, 
             "title": display_name, 
+            "name": display_name,
             "folder": folder, 
-            "subtitle": f"Node-{i} · Local", 
-            "startup_file": startup_file
+            "subtitle": f"Python Server · Node-{i}", 
+            "startup_file": startup_file,
+            "port": "N/A",
+            "status": "Stopped"
         })
     return servers
 
@@ -326,11 +332,13 @@ def api_register():
     data = request.get_json()
     username = data.get("username", "").strip()
     password = data.get("password", "").strip()
+    max_servers = int(data.get("max_servers", 3))
+    expiry_days = int(data.get("expiry_days", 30))
     
     if not username or not password:
         return jsonify({"success": False, "message": "اسم المستخدم وكلمة المرور مطلوبان"})
     
-    success, message = register_user(username, password, created_by_admin=True)
+    success, message = register_user(username, password, created_by_admin=True, max_servers=max_servers, expiry_days=expiry_days)
     return jsonify({"success": success, "message": message})
 
 @app.route("/api/login", methods=["POST"])
@@ -402,10 +410,13 @@ def api_servers_list():
     if 'username' not in session:
         return jsonify({"success": False}), 401
     
+    # دعم الأدمن في رؤية السيرفرات عند الزيارة
+    target_user = session['username']
     servers = load_servers_list()
+    
     # إضافة حالة التشغيل لكل سيرفر
     for s in servers:
-        proc_key = f"{session['username']}_{s['folder']}"
+        proc_key = f"{target_user}_{s['folder']}"
         s['status'] = "Stopped"
         if proc_key in running_procs:
             if running_procs[proc_key].poll() is None:
@@ -417,7 +428,7 @@ def api_servers_list():
     init_users_db()
     with open(USERS_FILE, "r", encoding="utf-8") as f:
         users = json.load(f)
-    user_data = users.get(session['username'], {})
+    user_data = users.get(target_user, {})
     
     return jsonify({
         "success": True,
@@ -472,25 +483,43 @@ def get_servers():
         return jsonify({"success": False, "message": "غير مصرح"}), 401
     return jsonify({"success": True, "servers": load_servers_list()})
 
-@app.route("/add", methods=["POST"])
+@app.route("/api/server/add", methods=["POST"])
 def add_server():
     if 'username' not in session:
         return jsonify({"success": False, "message": "غير مصرح"}), 401
     
+    # التحقق من الحد الأقصى للسيرفرات للمستخدم
+    init_users_db()
+    with open(USERS_FILE, "r", encoding="utf-8") as f:
+        users = json.load(f)
+    user_data = users.get(session['username'], {})
+    max_srv = user_data.get("max_servers", 3)
+    
+    current_servers = load_servers_list()
+    if len(current_servers) >= max_srv:
+        return jsonify({"success": False, "message": f"وصلت للحد الأقصى ({max_srv} سيرفرات)"})
+
     data = request.get_json(silent=True) or {}
     name = (data.get("name") or "").strip()
+    if not name: name = f"Server_{int(time.time())}"
     folder = sanitize_folder_name(name)
     
     user_servers_dir = ensure_user_servers_dir()
     target = os.path.join(user_servers_dir, folder)
     
     if os.path.exists(target): 
-        return jsonify({"success": False, "message": "Exists"}), 409
+        folder = f"{folder}_{int(time.time())}"
+        target = os.path.join(user_servers_dir, folder)
     
-    os.makedirs(target)
+    os.makedirs(target, exist_ok=True)
     ensure_meta(folder)
+    # تحديث اسم السيرفر في meta.json
+    meta_path = os.path.join(target, "meta.json")
+    with open(meta_path, "w", encoding="utf-8") as f:
+        json.dump({"display_name": name, "startup_file": "main.py"}, f)
+        
     open(os.path.join(target, "server.log"), "w").close()
-    return jsonify({"success": True, "servers": load_servers_list()})
+    return jsonify({"success": True, "message": "تم إنشاء السيرفر بنجاح"})
 
 @app.route("/server/stats/<folder>")
 def get_stats(folder):
