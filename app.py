@@ -146,6 +146,7 @@ def get_user_servers_dir(username):
     return path
 
 def is_admin(username):
+    if username == ADMIN_USERNAME: return True
     u = db["users"].get(username)
     return u.get("is_admin", False) if u else False
 
@@ -200,10 +201,12 @@ def api_login():
     password = data.get("password", "").strip()
     
     # التحقق من الأدمن أولاً بالبيانات المباشرة لضمان الدخول دائماً
-    if username.strip() == ADMIN_USERNAME and password.strip() == ADMIN_PASSWORD:
+    # نستخدم strip() لإزالة أي مسافات زائدة ونحول الاسم للحروف الكبيرة لضمان المطابقة
+    if username.strip().upper() == ADMIN_USERNAME and password.strip() == ADMIN_PASSWORD:
         session['username'] = ADMIN_USERNAME
         session.permanent = True
         # التأكد من وجود الأدمن في قاعدة البيانات وتحديث بياناته لضمان المطابقة
+        if "users" not in db: db["users"] = {}
         db["users"][ADMIN_USERNAME] = {
             "password": hashlib.sha256(ADMIN_PASSWORD.encode()).hexdigest(),
             "is_admin": True,
