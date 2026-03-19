@@ -268,7 +268,7 @@ def list_servers():
     user_servers = []
     for folder, srv in db["servers"].items():
         # عرض السيرفر إذا كان صاحبه أو إذا كان الأدمن يزوره
-        if srv["owner"] == session["username"] or (is_adm and folder == admin_view):
+        if srv["owner"] == session["username"] or (is_adm and (folder == admin_view or srv["owner"] == session["username"])):
             uptime_str = "0 ثانية"
             if srv.get("status") == "Running" and srv.get("start_time"):
                 diff = time.time() - srv["start_time"]
