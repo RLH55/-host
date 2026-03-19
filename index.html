@@ -1009,7 +1009,7 @@
                 });
                 const data = await res.json();
                 showToast(data.message, data.success ? 'success' : 'error');
-                loadServers();
+                setTimeout(loadServers, 500);
             });
         }
 
