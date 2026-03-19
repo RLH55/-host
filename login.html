@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1200px, initial-scale=0.5, maximum-scale=1.0, user-scalable=yes">
+    <title>دخول — OMAR BRO HOST</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: #040812;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            color: #fff;
+            overflow-x: hidden;
+            padding: 40px 20px;
+        }
+        /* خلفية النجوم */
+        #stars-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .login-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            margin-top: 60px;
+            margin-bottom: 100px;
+        }
+        .login-card {
+            background: rgba(15, 25, 45, 0.95);
+            border: 2px solid #00d4ff;
+            border-radius: 20px;
+            padding: 60px 50px;
+            box-shadow: 0 20px 60px rgba(0, 212, 255, 0.2);
+            backdrop-filter: blur(10px);
+            min-width: 600px;
+        }
+        .logo-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .logo-img {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            padding: 4px;
+            background: linear-gradient(135deg, #00d4ff, #0066ff, #00aaff);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.3), 0 0 25px rgba(0, 212, 255, 0.5), 0 0 50px rgba(0, 102, 255, 0.3);
+            animation: glow-pulse 2.5s ease-in-out infinite;
+        }
+        .logo-img img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+        }
+        @keyframes glow-pulse {
+            0%, 100% { box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.4), 0 0 25px rgba(0, 212, 255, 0.5), 0 0 50px rgba(0, 102, 255, 0.3); }
+            50% { box-shadow: 0 0 0 5px rgba(0, 212, 255, 0.7), 0 0 40px rgba(0, 212, 255, 0.8), 0 0 70px rgba(0, 102, 255, 0.5); }
+        }
+        .logo-name {
+            font-size: 28px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #00d4ff, #0066ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .form-group .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            color: #00d4ff;
+            pointer-events: none;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: #8899aa;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px 14px 45px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(0, 212, 255, 0.2);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .form-group input:focus {
+            border-color: #00d4ff;
+            background: rgba(0, 212, 255, 0.1);
+        }
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 15px 0;
+            font-size: 13px;
+            color: #8899aa;
+        }
+        .remember-me input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #00d4ff;
+        }
+        .btn-login {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #00d4ff, #0066ff);
+            border: none;
+            border-radius: 10px;
+            color: #000;
+            font-weight: 900;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 15px;
+        }
+        .btn-login:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 212, 255, 0.4);
+        }
+        .error-msg {
+            display: none;
+            background: rgba(255, 68, 68, 0.1);
+            border: 2px solid #ff4444;
+            color: #ff6666;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+        .features-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid rgba(0, 212, 255, 0.2);
+        }
+        .features-title {
+            text-align: center;
+            color: #00d4ff;
+            font-weight: 800;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .feature-item {
+            background: rgba(0, 212, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 13px;
+        }
+        .feature-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .stats-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        .stat-item {
+            background: rgba(0, 255, 136, 0.05);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 12px;
+        }
+        .stat-value {
+            font-size: 20px;
+            font-weight: 900;
+            color: #00ff88;
+            display: block;
+        }
+        .stat-label {
+            color: #8899aa;
+            font-size: 11px;
+            margin-top: 5px;
+        }
+        .footer-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(0, 212, 255, 0.2);
+            text-align: center;
+        }
+        .social-btns {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        .social-btn {
+            flex: 1;
+            padding: 12px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 8px;
+            color: #00d4ff;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .social-btn:hover {
+            background: rgba(0, 212, 255, 0.2);
+            border-color: #00d4ff;
+        }
+        .ai-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #00d4ff, #0066ff);
+            border: none;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 35px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.4);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        .ai-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 40px rgba(0, 212, 255, 0.6);
+        }
+        .ai-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        .ai-modal.active {
+            display: flex;
+        }
+        .ai-box {
+            background: rgba(15, 25, 45, 0.98);
+            border: 2px solid #00d4ff;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 600px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 212, 255, 0.3);
+        }
+        .ai-header {
+            padding: 20px;
+            border-bottom: 2px solid rgba(0, 212, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ai-title {
+            font-weight: 800;
+            color: #00d4ff;
+            font-size: 16px;
+        }
+        .ai-close {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .ai-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .ai-message {
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            max-width: 80%;
+        }
+        .ai-message.user {
+            background: rgba(0, 212, 255, 0.2);
+            color: #00d4ff;
+            align-self: flex-end;
+        }
+        .ai-message.bot {
+            background: rgba(0, 255, 136, 0.1);
+            color: #00ff88;
+            align-self: flex-start;
+        }
+        .ai-input-row {
+            padding: 15px;
+            border-top: 2px solid rgba(0, 212, 255, 0.2);
+            display: flex;
+            gap: 10px;
+        }
+        .ai-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(0, 212, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            padding: 10px 12px;
+            font-size: 13px;
+            outline: none;
+        }
+        .ai-send {
+            background: linear-gradient(135deg, #00d4ff, #0066ff);
+            border: none;
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .ai-send:hover {
+            transform: translateY(-2px);
+        }
+        .copyright-text {
+            text-align: center;
+            color: #8899aa;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        @media (max-width: 600px) {
+            .login-card { padding: 30px 20px; }
+            .features-grid { grid-template-columns: 1fr; }
+            .stats-section { grid-template-columns: 1fr 1fr; }
+            .ai-button { width: 60px; height: 60px; font-size: 28px; bottom: 20px; right: 20px; }
+            body { padding: 20px 10px; }
+            .login-container { margin-top: 40px; margin-bottom: 80px; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="stars-canvas"></canvas>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="logo-section">
+                <div class="logo-img">
+                    <img src="/static/profile_image.png" alt="OMAR BRO HOST">
+                </div>
+                <div class="logo-name">OMAR BRO HOST</div>
+            </div>
+
+            <div class="error-msg" id="errorMsg"></div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>اسم المستخدم</label>
+                    <span class="input-icon">👤</span>
+                    <input type="text" id="username" placeholder="أدخل اسم المستخدم" required>
+                </div>
+                <div class="form-group">
+                    <label>كلمة المرور</label>
+                    <span class="input-icon">🔒</span>
+                    <input type="password" id="password" placeholder="أدخل كلمة المرور" required>
+                </div>
+                <label class="remember-me">
+                    <input type="checkbox" id="rememberMe">
+                    <span>تذكرني لمدة 30 يوماً</span>
+                </label>
+                <button type="submit" class="btn-login">🚀 دخول</button>
+            </form>
+
+            <div class="features-section">
+                <div class="features-title">✨ الميزات الرئيسية</div>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">🚀</div>
+                        <div>استضافة فورية</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🔐</div>
+                        <div>آمنة وموثوقة</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">⚡</div>
+                        <div>سرعة عالية</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📊</div>
+                        <div>إحصائيات مباشرة</div>
+                    </div>
+                </div>
+
+                <div class="features-title">📈 الإحصائيات</div>
+                <div class="stats-section">
+                    <div class="stat-item">
+                        <span class="stat-value">1000+</span>
+                        <span class="stat-label">مستخدم نشط</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">99.9%</span>
+                        <span class="stat-label">توفر الخدمة</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">24/7</span>
+                        <span class="stat-label">دعم فني</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <div class="social-btns">
+                    <button onclick="openDeveloper()" class="social-btn" style="cursor:pointer; border:none; font-family:'Tajawal',sans-serif;">💬 تواصل مع المطور</button>
+                    <button onclick="openChannel()" class="social-btn" style="cursor:pointer; border:none; font-family:'Tajawal',sans-serif;">📢 القناة الرسمية</button>
+                </div>
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid rgba(0, 212, 255, 0.2);">
+                    <p style="color: #8899aa; font-size: 12px; margin-bottom: 8px;">🔐 جميع الحقوق محفوظة</p>
+                    <p style="color: #00d4ff; font-size: 14px; font-weight: 900; letter-spacing: 1px;">© OMAR 2026</p>
+                    <p style="color: #8899aa; font-size: 11px; margin-top: 8px;">OMAR BRO HOST™</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="ai-button" onclick="toggleAI()">🤖</button>
+
+    <div class="ai-modal" id="aiModal">
+        <div class="ai-box">
+            <div class="ai-header">
+                <span class="ai-title">✨ مساعد الذكاء الاصطناعي</span>
+                <button class="ai-close" onclick="toggleAI()">✕</button>
+            </div>
+            <div class="ai-messages" id="aiMessages">
+                <div class="ai-message bot">مرحباً! 👋 أنا مساعد OMAR BRO HOST. كيف يمكنني مساعدتك اليوم؟</div>
+            </div>
+            <div class="ai-input-row">
+                <input type="text" class="ai-input" id="aiInput" placeholder="اكتب سؤالك هنا...">
+                <button class="ai-send" onclick="sendAIMessage()">إرسال</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('errorMsg');
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username, password})
+                });
+                const data = await res.json();
+                if (data.success) {
+                    window.location.href = data.redirect;
+                } else {
+                    errorMsg.style.display = 'block';
+                    errorMsg.textContent = '❌ ' + data.message;
+                }
+            } catch (err) {
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = '❌ خطأ في الاتصال';
+            }
+        };
+
+        function toggleAI() {
+            document.getElementById('aiModal').classList.toggle('active');
+        }
+
+        // زر المطور - يفتح تيليجرام المطور
+        function openDeveloper() {
+            window.open('https://t.me/RLH55', '_blank');
+        }
+
+        // زر القناة - يفتح قناة التيليجرام
+        function openChannel() {
+            window.open('https://t.me/RLH5500', '_blank');
+        }
+
+        async function sendAIMessage() {
+            const input = document.getElementById('aiInput');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            const messagesBox = document.getElementById('aiMessages');
+            
+            // إضافة رسالة المستخدم
+            const userMsg = document.createElement('div');
+            userMsg.className = 'ai-message user';
+            userMsg.textContent = msg;
+            messagesBox.appendChild(userMsg);
+            input.value = '';
+            messagesBox.scrollTop = messagesBox.scrollHeight;
+
+            // إضافة رسالة "جاري التفكير..."
+            const botMsg = document.createElement('div');
+            botMsg.className = 'ai-message bot';
+            botMsg.innerHTML = '<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span> جاري التفكير';
+            messagesBox.appendChild(botMsg);
+            messagesBox.scrollTop = messagesBox.scrollHeight;
+
+            try {
+                const res = await fetch('/api/ai/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({message: msg})
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    botMsg.textContent = data.reply;
+                } else {
+                    botMsg.textContent = '❌ عذراً، حدث خطأ في الاتصال بالذكاء الاصطناعي.';
+                }
+            } catch (err) {
+                botMsg.textContent = '❌ فشل الاتصال بالخادم.';
+            }
+            messagesBox.scrollTop = messagesBox.scrollHeight;
+        }
+
+        document.getElementById('aiInput').onkeypress = (e) => {
+            if (e.key === 'Enter') sendAIMessage();
+        };
+
+        // خلفية النجوم المتحركة
+        (function() {
+            const canvas = document.getElementById('stars-canvas');
+            const ctx = canvas.getContext('2d');
+            let stars = [];
+            const NUM_STARS = 220;
+            const SPEED = 0.25;
+
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+
+            function initStars() {
+                stars = [];
+                for (let i = 0; i < NUM_STARS; i++) {
+                    stars.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        r: Math.random() * 1.6 + 0.2,
+                        alpha: Math.random() * 0.8 + 0.2,
+                        speed: Math.random() * SPEED + 0.04,
+                        twinkle: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+
+            function drawStars() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                // خلفية تدرجية سماوية
+                const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                grad.addColorStop(0, '#020610');
+                grad.addColorStop(0.4, '#060e1e');
+                grad.addColorStop(1, '#0a1428');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                stars.forEach(s => {
+                    s.twinkle += 0.018;
+                    const alpha = s.alpha * (0.5 + 0.5 * Math.sin(s.twinkle));
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(180, 220, 255, ${alpha})`;
+                    ctx.fill();
+                    s.y += s.speed;
+                    if (s.y > canvas.height) {
+                        s.y = 0;
+                        s.x = Math.random() * canvas.width;
+                    }
+                });
+            }
+
+            function animate() {
+                drawStars();
+                requestAnimationFrame(animate);
+            }
+
+            window.addEventListener('resize', () => { resize(); initStars(); });
+            resize();
+            initStars();
+            animate();
+        })();
+    </script>
+</body>
+</html>
