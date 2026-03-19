@@ -91,9 +91,14 @@ def load_db():
         "logs": []
     }
 
-def save_db(db):
-    with open(DB_FILE, 'w', encoding='utf-8') as f:
-        json.dump(db, f, indent=4)
+def save_db(new_db=None):
+    global db
+    if new_db: db = new_db
+    try:
+        with open(DB_FILE, 'w', encoding='utf-8') as f:
+            json.dump(db, f, indent=4, ensure_ascii=False)
+    except Exception as e:
+        print(f"Error saving DB: {e}")
 
 db = load_db()
 
@@ -194,12 +199,26 @@ def api_login():
     username = data.get("username", "").strip()
     password = data.get("password", "").strip()
     
+    # التحقق من الأدمن أولاً بالبيانات المباشرة لضمان الدخول دائماً
+    if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+        session['username'] = username
+        session.permanent = True
+        if username not in db["users"]:
+            db["users"][username] = {
+                "password": hashlib.sha256(password.encode()).hexdigest(),
+                "is_admin": True,
+                "created_at": str(datetime.now())
+            }
+        db["users"][username]["last_login"] = str(datetime.now())
+        save_db()
+        return jsonify({"success": True, "redirect": "/admin"})
+
     user = db["users"].get(username)
     if user and user["password"] == hashlib.sha256(password.encode()).hexdigest():
         session['username'] = username
         session.permanent = True
         user["last_login"] = str(datetime.now())
-        save_db(db)
+        save_db()
         return jsonify({
             "success": True,
             "redirect": "/admin" if user.get("is_admin") else "/dashboard"
@@ -208,7 +227,7 @@ def api_login():
 
 @app.route('/api/logout', methods=['POST'])
 def api_logout():
-    session.pop('username', None)
+    session.clear()
     return jsonify({"success": True})
 
 @app.route('/api/current_user')
@@ -646,6 +665,7 @@ def admin_visit_server(folder):
     if not srv: return jsonify({"success": False}), 404
     # تخزين السيرفر المستهدف في الجلسة للأدمن
     session["admin_viewing_server"] = folder
+    # مسح أي جلسة سابقة للمستخدم العادي لضمان رؤية سيرفر الأدمن المختار
     return jsonify({"success": True, "redirect": "/dashboard"})
 
 @app.route('/api/admin/all-servers')
