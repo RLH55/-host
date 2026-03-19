@@ -203,26 +203,38 @@ def api_login():
     if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
         session['username'] = username
         session.permanent = True
+        # التأكد من وجود الأدمن في قاعدة البيانات
         if username not in db["users"]:
             db["users"][username] = {
                 "password": hashlib.sha256(password.encode()).hexdigest(),
                 "is_admin": True,
-                "created_at": str(datetime.now())
+                "created_at": str(datetime.now()),
+                "max_servers": 10,
+                "expiry_days": 365
             }
         db["users"][username]["last_login"] = str(datetime.now())
         save_db()
         return jsonify({"success": True, "redirect": "/admin"})
 
+    # التحقق من المستخدمين العاديين
     user = db["users"].get(username)
-    if user and user["password"] == hashlib.sha256(password.encode()).hexdigest():
-        session['username'] = username
-        session.permanent = True
-        user["last_login"] = str(datetime.now())
-        save_db()
-        return jsonify({
-            "success": True,
-            "redirect": "/admin" if user.get("is_admin") else "/dashboard"
-        })
+    if user:
+        # تجربة التحقق بالتشفير أو بكلمة السر المباشرة (للمستخدمين الجدد)
+        hashed_input = hashlib.sha256(password.encode()).hexdigest()
+        if user["password"] == hashed_input or user["password"] == password:
+            # تحديث كلمة السر للتشفير إذا كانت نصاً عادياً
+            if user["password"] == password:
+                user["password"] = hashed_input
+            
+            session['username'] = username
+            session.permanent = True
+            user["last_login"] = str(datetime.now())
+            save_db()
+            return jsonify({
+                "success": True,
+                "redirect": "/admin" if user.get("is_admin") else "/dashboard"
+            })
+            
     return jsonify({"success": False, "message": "خطأ في البيانات"})
 
 @app.route('/api/logout', methods=['POST'])
