@@ -230,34 +230,7 @@
             white-space: pre-wrap;
             margin-bottom: 20px;
             line-height: 1.5;
-            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
         }
-        .console-box::-webkit-scrollbar { width: 8px; }
-        .console-box::-webkit-scrollbar-track { background: rgba(0, 212, 255, 0.1); border-radius: 4px; }
-        .console-box::-webkit-scrollbar-thumb { background: rgba(0, 212, 255, 0.4); border-radius: 4px; }
-        .console-box::-webkit-scrollbar-thumb:hover { background: rgba(0, 212, 255, 0.6); }
-        /* شريط الإحصائيات المحسّن */
-        .stats-grid-enhanced {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 10px;
-            margin-top: 14px;
-            margin-bottom: 14px;
-        }
-        .stats-widget-enhanced {
-            background: rgba(0, 212, 255, 0.06);
-            border: 1px solid rgba(0, 212, 255, 0.2);
-            padding: 12px 14px;
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        .stats-widget-enhanced .label { color: #556677; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-        .stats-widget-enhanced .value { font-size: 15px; font-weight: 900; color: #00d4ff; }
-        .stats-widget-enhanced .value.green { color: #00ff88; }
-        .stats-widget-enhanced .value.orange { color: #ffaa00; }
-        .stats-widget-enhanced .value.red { color: #ff6666; }
 
         /* أزرار الإجراءات */
         .action-buttons {
@@ -296,61 +269,6 @@
         .stats-widget-label { color: #8899aa; font-size: 11px; }
         .stats-widget-value { font-size: 16px; font-weight: 900; color: #00d4ff; margin-top: 5px; }
 
-        /* شريط الكونسول المحسّن */
-        .console-header-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 16px;
-            background: rgba(0, 0, 0, 0.6);
-            border: 2px solid rgba(0, 212, 255, 0.3);
-            border-radius: 10px 10px 0 0;
-            border-bottom: none;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .console-header-title {
-            color: #00d4ff;
-            font-size: 13px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .console-header-actions {
-            display: flex;
-            gap: 6px;
-        }
-        .btn-console-action {
-            padding: 5px 12px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: 'Tajawal', sans-serif;
-            border: 1px solid;
-        }
-        .btn-clear-console { background: rgba(255, 68, 68, 0.15); color: #ff6666; border-color: rgba(255, 68, 68, 0.4); }
-        .btn-clear-console:hover { background: rgba(255, 68, 68, 0.3); }
-        .btn-scroll-console { background: rgba(0, 212, 255, 0.15); color: #00d4ff; border-color: rgba(0, 212, 255, 0.4); }
-        .btn-scroll-console:hover { background: rgba(0, 212, 255, 0.3); }
-        .console-box {
-            background: rgba(0, 0, 0, 0.9);
-            border: 2px solid rgba(0, 212, 255, 0.2);
-            border-top: none;
-            border-radius: 0 0 12px 12px;
-            padding: 16px;
-            height: 420px;
-            overflow-y: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            color: #00ff88;
-            white-space: pre-wrap;
-            margin-bottom: 0;
-            line-height: 1.6;
-            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.7);
-        }
         /* زر حالة التشغيل في الكونسول */
         .console-status-bar {
             display: flex;
@@ -602,20 +520,6 @@
             padding: 30px;
         }
 
-        /* زر حالة التشغيل تحت المستخرجات */
-        .extract-run-status {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            background: rgba(0, 0, 0, 0.4);
-            border: 2px solid rgba(0, 212, 255, 0.2);
-            border-radius: 10px;
-            margin-top: 16px;
-            flex-wrap: wrap;
-        }
-        .extract-run-label { color: #8899aa; font-size: 13px; font-weight: 600; }
-
         /* شريط حالة التشغيل في المحرر */
         .run-status-bar {
             padding: 10px 18px;
@@ -835,7 +739,7 @@
 
             <!-- تبويب الكونسول -->
             <div id="consoleTab">
-                <!-- شريط حالة السيرفر المحسّن -->
+                <!-- زر حالة التشغيل تحت الكونسول -->
                 <div class="console-status-bar">
                     <span class="console-status-label">حالة السيرفر:</span>
                     <span class="console-status-btn offline" id="consoleStatusBtn">
@@ -843,57 +747,34 @@
                         <span id="consoleStatusText">Offline</span>
                     </span>
                     <span id="consolePortInfo" class="console-port-info">Port: --</span>
-                    <span id="consoleUptimeInfo" style="font-size:12px; color:#ffaa00; font-weight:700; margin-right:auto;"></span>
                 </div>
 
-                <!-- رأس الكونسول مع أزرار -->
-                <div class="console-header-bar">
-                    <div class="console-header-title">
-                        <span style="color:#00ff88;">&#9679;</span>
-                        <span style="color:#ff6666;">&#9679;</span>
-                        <span style="color:#ffaa00;">&#9679;</span>
-                        &nbsp;⚡ كونسول السيرفر
-                    </div>
-                    <div class="console-header-actions">
-                        <button class="btn-console-action btn-scroll-console" onclick="scrollConsoleBottom()">&#8595; أسفل</button>
-                        <button class="btn-console-action btn-clear-console" onclick="clearConsole()">&#128465; مسح</button>
-                    </div>
-                </div>
                 <div class="console-box" id="consoleOutput">في انتظار المخرجات...</div>
 
-                <!-- إحصائيات محسّنة -->
-                <div class="stats-grid-enhanced">
-                    <div class="stats-widget-enhanced">
-                        <span class="label">حالة التشغيل</span>
-                        <span class="value" id="statusValue">Offline</span>
-                    </div>
-                    <div class="stats-widget-enhanced">
-                        <span class="label">الذاكرة RAM</span>
-                        <span class="value orange" id="memValue">0 MB</span>
-                    </div>
-                    <div class="stats-widget-enhanced">
-                        <span class="label">وقت التشغيل</span>
-                        <span class="value green" id="uptimeValue">--</span>
-                    </div>
-                    <div class="stats-widget-enhanced">
-                        <span class="label">البورت</span>
-                        <span class="value green" id="portValue">--</span>
-                    </div>
-                    <div class="stats-widget-enhanced">
-                        <span class="label">عنوان IP</span>
-                        <span class="value" id="ipValue">--</span>
-                    </div>
-                    <div class="stats-widget-enhanced">
-                        <span class="label">CPU</span>
-                        <span class="value orange" id="cpuValue">--</span>
-                    </div>
+                <div class="action-buttons">
+                    <button class="btn-action btn-start" onclick="serverAction('start')">▶ تشغيل</button>
+                    <button class="btn-action btn-restart" onclick="serverAction('restart')">🔄 إعادة تشغيل</button>
+                    <button class="btn-action btn-stop" onclick="serverAction('stop')">⏹ إيقاف</button>
+                    <button class="btn-action btn-delete" onclick="confirmDelete()">🗑️ حذف السيرفر</button>
                 </div>
 
-                <div class="action-buttons">
-                    <button class="btn-action btn-start" onclick="serverAction('start')">&#9654; تشغيل</button>
-                    <button class="btn-action btn-restart" onclick="serverAction('restart')">&#128260; إعادة تشغيل</button>
-                    <button class="btn-action btn-stop" onclick="serverAction('stop')">&#9209; إيقاف</button>
-                    <button class="btn-action btn-delete" onclick="confirmDelete()">&#128465;&#65039; حذف السيرفر</button>
+                <div class="stats-grid">
+                    <div class="stats-widget">
+                        <div class="stats-widget-label">الحالة</div>
+                        <div class="stats-widget-value" id="statusValue">Offline</div>
+                    </div>
+                    <div class="stats-widget">
+                        <div class="stats-widget-label">استخدام الذاكرة</div>
+                        <div class="stats-widget-value" id="memValue">0 MB</div>
+                    </div>
+                    <div class="stats-widget">
+                        <div class="stats-widget-label">عنوان IP</div>
+                        <div class="stats-widget-value" id="ipValue">--</div>
+                    </div>
+                    <div class="stats-widget">
+                        <div class="stats-widget-label">البورت المخصص</div>
+                        <div class="stats-widget-value" id="portValue" style="color:#00ff88;">--</div>
+                    </div>
                 </div>
             </div>
 
@@ -962,15 +843,6 @@
                 <div class="editor-extract" id="extractArea">
                     <div class="extract-header">🔍 تحليل الملف</div>
                     <div id="extractContent"></div>
-                    <!-- زر حالة التشغيل تحت المستخرجات -->
-                    <div class="extract-run-status" id="extractRunStatus">
-                        <span class="extract-run-label">حالة السيرفر:</span>
-                        <span class="run-status-btn stopped" id="extractStatusBtn">
-                            <span class="status-dot stopped" id="extractStatusDot"></span>
-                            <span id="extractStatusText">Offline</span>
-                        </span>
-                        <span id="extractPortInfo" style="margin-right: auto; font-size: 12px; color: #00d4ff; font-weight:700;">Port: --</span>
-                    </div>
                 </div>
             </div>
             <div class="run-status-bar" id="editorStatusBar">
@@ -1048,42 +920,16 @@
 
         // ============== Auth ==============
         async function checkAuth() {
-            try {
-                const res = await fetch('/api/current_user');
-                if (res.status === 401 || res.redirected) {
-                    window.location.replace('/login');
-                    return;
-                }
-                const data = await res.json();
-                if (!data.success) {
-                    window.location.replace('/login');
-                    return;
-                }
-                document.getElementById('username').textContent = data.username;
-                loadServers();
-            } catch(e) {
-                window.location.replace('/login');
-            }
+            const res = await fetch('/api/current_user');
+            const data = await res.json();
+            if (!data.success) { window.location.href = '/login'; return; }
+            document.getElementById('username').textContent = data.username;
+            loadServers();
         }
 
         // ============== السيرفرات ==============
         async function loadServers() {
-            // التحقق مما إذا كان الأدمن يزور سيرفر معين
-            const adminUser = sessionStorage.getItem('admin_view_user');
-            const adminFolder = sessionStorage.getItem('admin_view_folder');
-            
-            if (adminUser && adminFolder) {
-                // تنظيف sessionStorage فوراً لمنع التكرار عند التحديث
-                sessionStorage.removeItem('admin_view_user');
-                sessionStorage.removeItem('admin_view_folder');
-                
-                // فتح السيرفر مباشرة
-                openServer({folder: adminFolder, title: 'سيرفر ' + adminUser});
-                return;
-            }
-
-            // تعديل المسار ليتوافق مع bot.py
-            const res = await fetch('/api/servers_list');
+            const res = await fetch('/api/servers');
             const data = await res.json();
             if (!data.success) return;
 
@@ -1102,7 +948,7 @@
                 const card = document.createElement('div');
                 card.className = 'server-card';
                 card.innerHTML = `
-                    <div class="server-icon">${isOnline ? '⚡' : '🖥️'}</div>
+                    <div class="server-icon">🖥️</div>
                     <div class="server-name">${escHtml(srv.title)}</div>
                     <div class="server-type">${escHtml(srv.subtitle)}</div>
                     <div class="server-port">🔌 Port: ${srv.port || 'N/A'}</div>
@@ -1120,13 +966,9 @@
             currentServer = srv;
             document.getElementById('homeView').style.display = 'none';
             document.getElementById('serverDetailView').classList.add('active');
-            document.getElementById('serverTitle').textContent = srv.name || srv.title || 'Server';
-            
-            // التأكد من تفعيل تبويب الكونسول فوراً
-            setTimeout(() => {
-                switchTab('console');
-                startPolling();
-            }, 50);
+            document.getElementById('serverTitle').textContent = srv.title;
+            switchTab('console');
+            startPolling();
         }
 
         function goHome() {
@@ -1145,82 +987,44 @@
             if (tab === 'files') loadFiles();
         }
 
-        // ============== Poll        async function startPolling() {
+        // ============== Polling ==============
+        function startPolling() {
             if (pollInterval) clearInterval(pollInterval);
-            pollServerStatus();
-            pollInterval = setInterval(pollServerStatus, 3000);
+            fetchStats();
+            pollInterval = setInterval(fetchStats, 2500);
         }
 
-        async function pollServerStatus() {
+        async function fetchStats() {
             if (!currentServer) return;
             try {
-                // تعديل المسار ليتوافق مع bot.py
-                const res = await fetch(`/server/status/${currentServer.folder}`);
+                const res = await fetch(`/api/server/stats/${currentServer.folder}`);
                 const data = await res.json();
                 if (!data.status) return;
 
-                // عرض المخرجات الخام فقط بدون تدخل تجميلي
-                let logs = data.logs || 'في انتظار المخرجات...';
+                const logs = data.logs || 'في انتظار المخرجات...';
                 const box = document.getElementById('consoleOutput');
-                
-                // تحديث الكونسول فقط إذا تغيّر المحتوى
-                if (box.textContent !== logs) {
-                    const isAtBottom = box.scrollHeight - box.scrollTop <= box.clientHeight + 50;
-                    box.textContent = logs;
-                    if (isAtBottom) box.scrollTop = box.scrollHeight;
-                }
+                const atBottom = box.scrollHeight - box.scrollTop <= box.clientHeight + 50;
+                box.textContent = logs;
+                if (atBottom) box.scrollTop = box.scrollHeight;
 
-                // تحديث الإحصائيات
-                const isRunning = data.status === 'Running';
-                const svEl = document.getElementById('statusValue');
-                svEl.textContent = isRunning ? 'Online ✅' : 'Offline ⏹';
-                svEl.className = 'value ' + (isRunning ? 'green' : 'red');
-
+                document.getElementById('statusValue').textContent = data.online_status || data.status;
                 document.getElementById('memValue').textContent = data.mem || '0 MB';
                 document.getElementById('ipValue').textContent = data.ip || '--';
                 document.getElementById('portValue').textContent = data.port || '--';
-                document.getElementById('uptimeValue').textContent = data.uptime || '--';
-
-                // CPU
-                try {
-                    const metricsRes = await fetch('/api/system/metrics');
-                    const metrics = await metricsRes.json();
-                    const cpuEl = document.getElementById('cpuValue');
-                    if (cpuEl) {
-                        cpuEl.textContent = (metrics.cpu || 0).toFixed(1) + '%';
-                        cpuEl.className = 'value ' + (metrics.cpu > 80 ? 'red' : metrics.cpu > 50 ? 'orange' : 'green');
-                    }
-                } catch(e) {}
 
                 const portText = 'Port: ' + (data.port || '--');
                 document.getElementById('consolePortInfo').textContent = portText;
-                const uptimeEl = document.getElementById('consoleUptimeInfo');
-                if (uptimeEl && isRunning) uptimeEl.textContent = '⏱ ' + (data.uptime || '');
-                else if (uptimeEl) uptimeEl.textContent = '';
-
                 document.getElementById('editorPortInfo').textContent = portText;
-                const exPortEl = document.getElementById('extractPortInfo');
-                if (exPortEl) exPortEl.textContent = portText;
 
                 currentServer.status = data.status;
                 updateStatusBtns(data.status);
             } catch(e) {}
         }
 
-        function scrollConsoleBottom() {
-            const box = document.getElementById('consoleOutput');
-            box.scrollTop = box.scrollHeight;
-        }
-
-        function clearConsole() {
-            document.getElementById('consoleOutput').textContent = '█ تم مسح الكونسول...';
-        }
-
         function updateStatusBtns(status) {
             const isRunning = status === 'Running';
             const cls = isRunning ? 'online' : 'offline';
-            const txt = isRunning ? '✅ يعمل' : '⏹ متوقف';
-            const txtEn = isRunning ? 'Online' : 'Offline';
+            const txt = isRunning ? 'Online' : 'Offline';
 
             // زر حالة الكونسول
             const csBtn = document.getElementById('consoleStatusBtn');
@@ -1236,18 +1040,9 @@
             edDot.className = 'status-dot ' + (isRunning ? 'running' : 'stopped');
             document.getElementById('editorStatusText').textContent = txt;
 
-            // زر حالة المستخرجات
-            const exBtn = document.getElementById('extractStatusBtn');
-            const exDot = document.getElementById('extractStatusDot');
-            if (exBtn && exDot) {
-                exBtn.className = 'run-status-btn ' + (isRunning ? 'running' : 'stopped');
-                exDot.className = 'status-dot ' + (isRunning ? 'running' : 'stopped');
-                document.getElementById('extractStatusText').textContent = txt;
-            }
-
             // حالة الإحصائيات
             const sv = document.getElementById('statusValue');
-            sv.textContent = txtEn;
+            sv.textContent = txt;
             sv.style.color = isRunning ? '#00ff88' : '#ff6666';
         }
 
@@ -1262,9 +1057,7 @@
             };
             showToast(msgs[action] || '...', 'info');
 
-            // تعديل المسار ليتوافق مع bot.py
-            const url = `/server/action/${currentServer.folder}/${action}`;
-            const res = await fetch(url, {method: 'POST'});
+            const res = await fetch(`/api/server/action/${currentServer.folder}/${action}`, {method: 'POST'});
             const data = await res.json();
             if (data.success) {
                 showToast(data.message || '✅ تم تنفيذ العملية', 'success');
@@ -1275,25 +1068,13 @@
 
         function confirmDelete() {
             showConfirm('🗑️', 'حذف السيرفر', 'هل أنت متأكد من حذف السيرفر نهائياً؟ لا يمكن التراجع!', 'حذف نهائياً', async () => {
-                try {
-                    showToast('⏳ جاري حذف السيرفر...', 'info');
-                    // تعديل المسار ليتوافق مع bot.py
-                    const res = await fetch(`/server/delete/${currentServer.folder}`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'}
-                    });
-                    if (!res.ok) throw new Error('HTTP ' + res.status);
-                    const data = await res.json();
-                    if (data.success) {
-                        showToast('🗑️ تم حذف السيرفر بنجاح', 'success');
-                        clearInterval(pollInterval);
-                        currentServer = null;
-                        setTimeout(() => goHome(), 800);
-                    } else {
-                        showToast('❌ ' + (data.message || 'فشل الحذف'), 'error');
-                    }
-                } catch(e) {
-                    showToast('❌ خطأ في الحذف: ' + e.message, 'error');
+                const res = await fetch(`/api/server/action/${currentServer.folder}/delete`, {method: 'POST'});
+                const data = await res.json();
+                if (data.success) {
+                    showToast('🗑️ تم حذف السيرفر', 'success');
+                    goHome();
+                } else {
+                    showToast('❌ فشل الحذف', 'error');
                 }
             });
         }
@@ -1301,8 +1082,7 @@
         // ============== إدارة الملفات ==============
         async function loadFiles() {
             document.getElementById('filesList').innerHTML = '<tr><td colspan="4" style="text-align:center;color:#8899aa;padding:20px;"><span class="spinner"></span> جاري التحميل...</td></tr>';
-            // تعديل المسار ليتوافق مع bot.py
-            const res = await fetch(`/files/list/${currentServer.folder}`);
+            const res = await fetch(`/api/files/list/${currentServer.folder}`);
             const files = await res.json();
             const list = document.getElementById('filesList');
 
@@ -1319,9 +1099,9 @@
                     </td>
                     <td style="color:#8899aa;">${f.size}</td>
                     <td class="file-actions">
-                        ${!f.is_dir ? `<button class="btn-file btn-view" data-filename="${escHtml(f.name)}" onclick="viewFile(this.getAttribute('data-filename'))">📝 تعديل</button>` : ''}
-                        <button class="btn-file btn-rename-file" data-filename="${escHtml(f.name)}" onclick="renameFile(this.getAttribute('data-filename'))">✏️ اسم</button>
-                        <button class="btn-file btn-delete-file" data-filename="${escHtml(f.name)}" onclick="deleteFileSingle(this.getAttribute('data-filename'))">🗑️</button>
+                        ${!f.is_dir ? `<button class="btn-file btn-view" onclick="viewFile('${escHtml(f.name)}')">📝 تعديل</button>` : ''}
+                        <button class="btn-file btn-rename-file" onclick="renameFile('${escHtml(f.name)}')">✏️ اسم</button>
+                        <button class="btn-file btn-delete-file" onclick="deleteFileSingle('${escHtml(f.name)}')">🗑️</button>
                     </td>
                 </tr>
             `).join('');
@@ -1339,58 +1119,30 @@
         }
 
         async function deleteSelectedFiles() {
-            const selected = Array.from(document.querySelectorAll('.select-file:checked')).map(cb => {
-                // استخدام القيمة الأصلية من الـ checkbox مباشرة
-                const row = cb.closest('tr');
-                const deleteBtn = row ? row.querySelector('.btn-delete-file') : null;
-                return deleteBtn ? deleteBtn.getAttribute('data-filename') : cb.value;
-            });
+            const selected = Array.from(document.querySelectorAll('.select-file:checked')).map(cb => cb.value);
             if (selected.length === 0) { showToast('⚠️ الرجاء تحديد ملفات أولاً', 'warning'); return; }
-            showConfirm('🗑️', 'حذف الملفات', `هل تريد حذف ${selected.length} ملف؟ لا يمكن التراجع!`, 'حذف', async () => {
-                try {
-                    showToast('⏳ جاري حذف الملفات...', 'info');
-                    // تعديل المسار ليتوافق مع bot.py
-                    const res = await fetch(`/files/delete/${currentServer.folder}`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({names: selected})
-                    });
-                    if (!res.ok) throw new Error('HTTP ' + res.status);
-                    const data = await res.json();
-                    if (data.success) {
-                        showToast('✅ ' + (data.message || 'تم الحذف'), 'success');
-                        document.getElementById('selectAll').checked = false;
-                        loadFiles();
-                    } else {
-                        showToast('❌ ' + (data.message || 'فشل الحذف'), 'error');
-                    }
-                } catch(e) {
-                    showToast('❌ خطأ: ' + e.message, 'error');
-                }
+            showConfirm('🗑️', 'حذف الملفات', `هل تريد حذف ${selected.length} ملف؟`, 'حذف', async () => {
+                const res = await fetch(`/api/files/delete/${currentServer.folder}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({names: selected})
+                });
+                const data = await res.json();
+                showToast(data.message, 'success');
+                loadFiles();
             });
         }
 
         async function deleteFileSingle(filename) {
             showConfirm('🗑️', 'حذف الملف', `هل تريد حذف "${filename}"؟`, 'حذف', async () => {
-                try {
-                    showToast('⏳ جاري حذف الملف...', 'info');
-                    // تعديل المسار ليتوافق مع bot.py
-                    const res = await fetch(`/files/delete/${currentServer.folder}`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({names: [filename]})
-                    });
-                    if (!res.ok) throw new Error('HTTP ' + res.status);
-                    const data = await res.json();
-                    if (data.success) {
-                        showToast('✅ تم حذف "' + filename + '"', 'success');
-                        loadFiles();
-                    } else {
-                        showToast('❌ ' + (data.message || 'فشل الحذف'), 'error');
-                    }
-                } catch(e) {
-                    showToast('❌ خطأ: ' + e.message, 'error');
-                }
+                const res = await fetch(`/api/files/delete/${currentServer.folder}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({name: filename})
+                });
+                const data = await res.json();
+                showToast(data.message, 'success');
+                loadFiles();
             });
         }
 
@@ -1451,10 +1203,6 @@
             // تحليل المستخرجات
             buildExtract(filename, data.content || '');
             updateStatusBtns(currentServer.status || 'Stopped');
-            // تحديث معلومات البورت في المستخرجات
-            const portText = 'Port: ' + (currentServer.port || '--');
-            const exPortEl = document.getElementById('extractPortInfo');
-            if (exPortEl) exPortEl.textContent = portText;
         }
 
         function buildExtract(filename, content) {
@@ -1579,15 +1327,8 @@
         }
 
         function logout() {
-            showConfirm('👋', 'تسجيل الخروج', 'هل تريد تسجيل الخروج؟', 'خروج', async () => {
-                try {
-                    // إرسال طلب POST لتسجيل الخروج
-                    await fetch('/api/logout', { method: 'POST' });
-                } catch(e) {}
-                // مسح الجلسة محلياً والتوجيه لصفحة تسجيل الدخول
-                sessionStorage.clear();
-                localStorage.removeItem('remember_token');
-                window.location.replace('/login');
+            showConfirm('👋', 'تسجيل الخروج', 'هل تريد تسجيل الخروج؟', 'خروج', () => {
+                fetch('/api/logout', {method: 'POST'}).then(() => window.location.href = '/login');
             });
         }
 

@@ -57,11 +57,6 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
 def run_bot(token: str, bot_name: str) -> None:
     """تشغيل البوت باستخدام التوكن المعطى"""
     try:
-        print("\n" + "═"*60)
-        print(f" 🤖 [OMAR BRO HOST] - جاري تشغيل البوت: {bot_name}")
-        print(" 🚀 يتم الآن الاتصال بخوادم تلجرام...")
-        print("═"*60 + "\n")
-        
         logger.info(f"🤖 بدء تشغيل البوت: {bot_name}")
         
         # إنشاء التطبيق
@@ -79,12 +74,6 @@ def run_bot(token: str, bot_name: str) -> None:
         application.add_error_handler(error_handler)
 
         # بدء البوت
-        print("\n" + "✨"*20)
-        print(f" ✅ البوت {bot_name} جاهز الآن!")
-        print(" 📡 الحالة: نشط وينتظر الرسائل...")
-        print(" ✨ استمتع بخدمة OMAR BRO HOST ✨")
-        print("✨"*20 + "\n")
-        
         logger.info(f"✅ البوت {bot_name} جاهز وينتظر الرسائل...")
         application.run_polling()
         

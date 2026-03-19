@@ -135,7 +135,7 @@ def delete_all_user_tokens(username):
     with open(REMEMBER_TOKENS_FILE, "w", encoding="utf-8") as f:
         json.dump(tokens, f, indent=2)
 
-def register_user(username, password, created_by_admin=False, max_servers=3, expiry_days=30):
+def register_user(username, password, created_by_admin=False):
     init_users_db()
     with open(USERS_FILE, "r", encoding="utf-8") as f:
         users = json.load(f)
@@ -153,9 +153,7 @@ def register_user(username, password, created_by_admin=False, max_servers=3, exp
         "theme": "blue",
         "is_admin": username == ADMIN_USERNAME,
         "created_by_admin": created_by_admin,
-        "created_by": session.get('username') if 'username' in session else None,
-        "max_servers": max_servers,
-        "expiry_days": expiry_days
+        "created_by": session.get('username') if 'username' in session else None
     }
     
     with open(USERS_FILE, "w", encoding="utf-8") as f:
@@ -256,22 +254,18 @@ def load_servers_list():
         meta_path = os.path.join(user_servers_dir, folder, "meta.json")
         display_name, startup_file = folder, ""
         try:
-            if os.path.exists(meta_path):
-                with open(meta_path, "r", encoding="utf-8") as f:
-                    meta = json.load(f)
-                    display_name = meta.get("display_name", folder)
-                    startup_file = meta.get("startup_file", "main.py")
+            with open(meta_path, "r", encoding="utf-8") as f:
+                meta = json.load(f)
+                display_name = meta.get("display_name", folder)
+                startup_file = meta.get("startup_file", "")
         except: 
             pass
         servers.append({
             "id": i, 
             "title": display_name, 
-            "name": display_name,
             "folder": folder, 
-            "subtitle": f"Python Server · Node-{i}", 
-            "startup_file": startup_file,
-            "port": "N/A",
-            "status": "Stopped"
+            "subtitle": f"Node-{i} · Local", 
+            "startup_file": startup_file
         })
     return servers
 
@@ -332,13 +326,11 @@ def api_register():
     data = request.get_json()
     username = data.get("username", "").strip()
     password = data.get("password", "").strip()
-    max_servers = int(data.get("max_servers", 3))
-    expiry_days = int(data.get("expiry_days", 30))
     
     if not username or not password:
         return jsonify({"success": False, "message": "اسم المستخدم وكلمة المرور مطلوبان"})
     
-    success, message = register_user(username, password, created_by_admin=True, max_servers=max_servers, expiry_days=expiry_days)
+    success, message = register_user(username, password, created_by_admin=True)
     return jsonify({"success": success, "message": message})
 
 @app.route("/api/login", methods=["POST"])
@@ -405,41 +397,6 @@ def api_current_user():
         })
     return jsonify({"success": False})
 
-@app.route("/api/servers_list")
-def api_servers_list():
-    if 'username' not in session:
-        return jsonify({"success": False}), 401
-    
-    # دعم الأدمن في رؤية السيرفرات عند الزيارة
-    target_user = session['username']
-    servers = load_servers_list()
-    
-    # إضافة حالة التشغيل لكل سيرفر
-    for s in servers:
-        proc_key = f"{target_user}_{s['folder']}"
-        s['status'] = "Stopped"
-        if proc_key in running_procs:
-            if running_procs[proc_key].poll() is None:
-                s['status'] = "Running"
-            else:
-                del running_procs[proc_key]
-    
-    # جلب إحصائيات المستخدم
-    init_users_db()
-    with open(USERS_FILE, "r", encoding="utf-8") as f:
-        users = json.load(f)
-    user_data = users.get(target_user, {})
-    
-    return jsonify({
-        "success": True,
-        "servers": servers,
-        "stats": {
-            "used": len(servers),
-            "total": user_data.get("max_servers", 3),
-            "expiry": user_data.get("expiry_days", 30)
-        }
-    })
-
 @app.route("/api/user/settings", methods=["GET", "POST"])
 def user_settings():
     if 'username' not in session:
@@ -483,43 +440,25 @@ def get_servers():
         return jsonify({"success": False, "message": "غير مصرح"}), 401
     return jsonify({"success": True, "servers": load_servers_list()})
 
-@app.route("/api/server/add", methods=["POST"])
+@app.route("/add", methods=["POST"])
 def add_server():
     if 'username' not in session:
         return jsonify({"success": False, "message": "غير مصرح"}), 401
     
-    # التحقق من الحد الأقصى للسيرفرات للمستخدم
-    init_users_db()
-    with open(USERS_FILE, "r", encoding="utf-8") as f:
-        users = json.load(f)
-    user_data = users.get(session['username'], {})
-    max_srv = user_data.get("max_servers", 3)
-    
-    current_servers = load_servers_list()
-    if len(current_servers) >= max_srv:
-        return jsonify({"success": False, "message": f"وصلت للحد الأقصى ({max_srv} سيرفرات)"})
-
     data = request.get_json(silent=True) or {}
     name = (data.get("name") or "").strip()
-    if not name: name = f"Server_{int(time.time())}"
     folder = sanitize_folder_name(name)
     
     user_servers_dir = ensure_user_servers_dir()
     target = os.path.join(user_servers_dir, folder)
     
     if os.path.exists(target): 
-        folder = f"{folder}_{int(time.time())}"
-        target = os.path.join(user_servers_dir, folder)
+        return jsonify({"success": False, "message": "Exists"}), 409
     
-    os.makedirs(target, exist_ok=True)
+    os.makedirs(target)
     ensure_meta(folder)
-    # تحديث اسم السيرفر في meta.json
-    meta_path = os.path.join(target, "meta.json")
-    with open(meta_path, "w", encoding="utf-8") as f:
-        json.dump({"display_name": name, "startup_file": "main.py"}, f)
-        
     open(os.path.join(target, "server.log"), "w").close()
-    return jsonify({"success": True, "message": "تم إنشاء السيرفر بنجاح"})
+    return jsonify({"success": True, "servers": load_servers_list()})
 
 @app.route("/server/stats/<folder>")
 def get_stats(folder):
@@ -553,75 +492,12 @@ def get_stats(folder):
         "ip": get_ip()
     })
 
-@app.route("/server/status/<folder>")
-def server_status(folder):
-    if 'username' not in session:
-        return jsonify({"success": False}), 401
-    
-    # تحديد مسار السيرفر (دعم الأدمن)
-    target_path = None
-    owner = session['username']
-    if is_admin(session['username']):
-        for u in os.listdir(USERS_DIR):
-            p = os.path.join(USERS_DIR, u, "SERVERS", folder)
-            if os.path.exists(p):
-                target_path = p
-                owner = u
-                break
-    else:
-        user_servers_dir = ensure_user_servers_dir()
-        target_path = os.path.join(user_servers_dir, folder)
-
-    if not target_path or not os.path.exists(target_path):
-        return jsonify({"success": False, "message": "غير موجود"}), 404
-
-    proc_key = f"{owner}_{folder}"
-    status = "Stopped"
-    if proc_key in running_procs:
-        if running_procs[proc_key].poll() is None:
-            status = "Running"
-        else:
-            del running_procs[proc_key]
-    
-    log_path = os.path.join(target_path, "server.log")
-    logs = ""
-    if os.path.exists(log_path):
-        try:
-            with open(log_path, "r", encoding="utf-8") as f:
-                logs = f.read()[-10000:] # آخر 10 آلاف حرف
-        except: pass
-    
-    meta_path = os.path.join(target_path, "meta.json")
-    display_name = folder
-    if os.path.exists(meta_path):
-        try:
-            with open(meta_path, "r", encoding="utf-8") as f:
-                display_name = json.load(f).get("display_name", folder)
-        except: pass
-
-    return jsonify({
-        "success": True,
-        "status": status,
-        "logs": logs,
-        "name": display_name,
-        "ip": get_ip(),
-        "port": "N/A" # bot.py لا يدعم البورتات حالياً
-    })
-
 @app.route("/server/action/<folder>/<act>", methods=["POST"])
-def server_act(folder, act):
+def server_action(folder, act):
     if 'username' not in session:
-        return jsonify({"success": False}), 401
+        return jsonify({"success": False, "message": "غير مصرح"}), 401
     
-    # دعم الأدمن في تنفيذ الإجراءات
-    owner = session['username']
-    if is_admin(session['username']):
-        for u in os.listdir(USERS_DIR):
-            if os.path.exists(os.path.join(USERS_DIR, u, "SERVERS", folder)):
-                owner = u
-                break
-    
-    proc_key = f"{owner}_{folder}"
+    proc_key = f"{session['username']}_{folder}"
     
     if proc_key in running_procs:
         try:
@@ -790,90 +666,21 @@ def rename_file(folder):
 @app.route("/files/delete/<folder>", methods=["POST"])
 def delete_file(folder):
     if 'username' not in session:
-        return jsonify({"success": False, "message": "غير مصرح"}), 401
+        return jsonify({"success": False}), 401
     
-    # تحديد مسار السيرفر بناءً على ما إذا كان المستخدم أدمن أم لا
-    if is_admin(session['username']):
-        # للأدمن: البحث عن السيرفر في كل مجلدات المستخدمين
-        target_path = None
-        for username in os.listdir(USERS_DIR):
-            p = os.path.join(USERS_DIR, username, "SERVERS", folder)
-            if os.path.exists(p):
-                target_path = p
-                break
-        if not target_path:
-            return jsonify({"success": False, "message": "السيرفر غير موجود"}), 404
-    else:
-        # للمستخدم العادي: سيرفراته فقط
-        user_servers_dir = ensure_user_servers_dir()
-        target_path = os.path.join(user_servers_dir, folder)
-        if not os.path.exists(target_path):
-            return jsonify({"success": False, "message": "غير مصرح"}), 403
-
-    data = request.get_json() or {}
-    names = data.get("names", data.get("name", []))
-    if isinstance(names, str): names = [names]
-    if not names:
-        return jsonify({"success": False, "message": "لم يتم تحديد ملفات"})
+    user_servers_dir = ensure_user_servers_dir()
+    data = request.get_json()
+    file_path = os.path.join(user_servers_dir, folder, data['name'])
     
-    import shutil
-    deleted = 0
-    for name in names:
-        if not name or '..' in name or name.startswith('/'): continue
-        fpath = os.path.join(target_path, name)
-        try:
-            if os.path.isdir(fpath):
-                shutil.rmtree(fpath)
-                deleted += 1
-            elif os.path.exists(fpath):
-                os.remove(fpath)
-                deleted += 1
-        except: pass
+    if not file_path.startswith(user_servers_dir):
+        return jsonify({"success": False}), 403
     
-    return jsonify({"success": True, "message": f"تم حذف {deleted} ملف بنجاح"})
-
-@app.route("/server/delete/<folder>", methods=["POST"])
-def delete_server(folder):
-    """حذف سيرفر بالكامل"""
-    if 'username' not in session:
-        return jsonify({"success": False, "message": "غير مصرح"}), 401
-    
-    target_path = None
-    if is_admin(session['username']):
-        for username in os.listdir(USERS_DIR):
-            p = os.path.join(USERS_DIR, username, "SERVERS", folder)
-            if os.path.exists(p):
-                target_path = p
-                break
-    else:
-        user_servers_dir = ensure_user_servers_dir()
-        target_path = os.path.join(user_servers_dir, folder)
-        if not os.path.exists(target_path):
-            target_path = None
-
-    if not target_path:
-        return jsonify({"success": False, "message": "السيرفر غير موجود أو غير مصرح بحذفه"})
-
-    # إيقاف أي عملية مرتبطة بالسيرفر
-    proc_key = f"{session['username']}_{folder}"
-    if proc_key in running_procs:
-        try:
-            p = psutil.Process(running_procs[proc_key].pid)
-            for child in p.children(recursive=True): child.kill()
-            p.kill()
-        except: pass
-        del running_procs[proc_key]
-
-    import shutil
-    try:
-        shutil.rmtree(target_path)
-        return jsonify({"success": True, "message": "تم حذف السيرفر نهائياً"})
-    except Exception as e:
-        return jsonify({"success": False, "message": f"خطأ أثناء الحذف: {str(e)}"})
+    os.remove(file_path)
+    return jsonify({"success": True})
 
 @app.route("/files/install/<folder>", methods=["POST"])
 def install_req(folder):
-    """تثبيت تلقائي للمكاتب من ملف requirements.txt مع إظهار كل شيء في الكونسول"""
+    """تثبيت تلقائي للمكاتب من ملف requirements.txt"""
     if 'username' not in session:
         return jsonify({"success": False}), 401
     
@@ -886,41 +693,25 @@ def install_req(folder):
     
     log_path = os.path.join(user_servers_dir, folder, "server.log")
     
-    # قراءة قائمة المكتبات المطلوبة
-    with open(req_path, 'r', encoding='utf-8') as rf:
-        packages = [line.strip() for line in rf.readlines() if line.strip() and not line.startswith('#')]
-    
-    # كتابة رسالة البدء التفصيلية في السجل
+    # كتابة رسالة البدء في السجل
     with open(log_path, "w", encoding="utf-8") as log_file:
-        log_file.write("=" * 60 + "\n")
-        log_file.write("📦 بدء تثبيت المكتبات...\n")
-        log_file.write("=" * 60 + "\n")
-        log_file.write(f"📋 عدد المكتبات المطلوبة: {len(packages)}\n")
-        for i, pkg in enumerate(packages, 1):
-            log_file.write(f"   {i}. {pkg}\n")
-        log_file.write("=" * 60 + "\n")
-        log_file.write(f"🔧 Python: {sys.executable}\n")
-        log_file.write(f"📂 مسار العمل: {os.path.join(user_servers_dir, folder)}\n")
-        log_file.write("=" * 60 + "\n\n")
+        log_file.write("[SYSTEM] Starting Installation...\n")
+        log_file.write(f"[SYSTEM] Installing packages from: {req_path}\n")
+        log_file.write(f"[SYSTEM] Python executable: {sys.executable}\n")
+        log_file.write(f"[SYSTEM] Working directory: {os.path.join(user_servers_dir, folder)}\n")
+        log_file.write("="*50 + "\n")
     
-    # تشغيل عملية التثبيت مع إظهار كل شيء
+    # تشغيل عملية التثبيت
     try:
         proc = subprocess.Popen(
-            [
-                sys.executable, "-m", "pip", "install",
-                "-r", "requirements.txt",
-                "--progress-bar", "on",
-                "--no-cache-dir",
-                "-v"
-            ],
+            [sys.executable, "-m", "pip", "install", "-r", "requirements.txt"], 
             cwd=os.path.join(user_servers_dir, folder), 
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            universal_newlines=True,
-            bufsize=1
+            universal_newlines=True
         )
         
-        # قراءة المخرجات وإضافتها للسجل في الوقت الفعلي
+        # قراءة المخرجات وإضافتها للسجل
         with open(log_path, "a", encoding="utf-8") as log_file:
             for line in proc.stdout:
                 log_file.write(line)
@@ -930,21 +721,20 @@ def install_req(folder):
         
         # كتابة نتيجة التثبيت
         with open(log_path, "a", encoding="utf-8") as log_file:
-            log_file.write("\n" + "=" * 60 + "\n")
             if proc.returncode == 0:
-                log_file.write("✅ تم تثبيت جميع المكتبات بنجاح!\n")
+                log_file.write("\n" + "="*50 + "\n")
+                log_file.write("[SYSTEM] Installation completed successfully!\n")
             else:
-                log_file.write(f"❌ فشل تثبيت المكتبات (كود الخطأ: {proc.returncode})\n")
-            log_file.write("=" * 60 + "\n")
+                log_file.write("\n" + "="*50 + "\n")
+                log_file.write(f"[SYSTEM] Installation failed with exit code: {proc.returncode}\n")
         
-        return jsonify({"success": True, "message": f"📦 تم تثبيت {len(packages)} مكتبة بنجاح, تابع الكونسول للتفاصيل"})
+        return jsonify({"success": True, "message": "تم بدء التثبيت"})
     
     except Exception as e:
         with open(log_path, "a", encoding="utf-8") as log_file:
-            log_file.write(f"\n❌ خطأ: {str(e)}\n")
+            log_file.write(f"\n[ERROR] Failed to start installation: {str(e)}\n")
         
         return jsonify({"success": False, "message": f"فشل بدء التثبيت: {str(e)}"})
-
 
 @app.route("/server/set-startup/<folder>", methods=["POST"])
 def set_startup(folder):
@@ -974,54 +764,15 @@ def get_all_users():
     
     user_list = []
     for username, data in users.items():
-        # إضافة معلومات السيرفرات لكل مستخدم
-        user_dir = get_user_servers_dir(username)
-        srv_count = 0
-        if os.path.exists(user_dir):
-            srv_count = len([d for d in os.listdir(user_dir) if os.path.isdir(os.path.join(user_dir, d))])
-            
-        user_list.append({
-            "username": username,
-            "is_admin": data.get("is_admin", False),
-            "created_at": data.get("created_at"),
-            "last_login": data.get("last_login"),
-            "max_servers": data.get("max_servers", 3),
-            "expiry_days": data.get("expiry_days", 30),
-            "server_count": srv_count
-        })
+        if username != ADMIN_USERNAME:  # عدم عرض المسؤول نفسه
+            user_list.append({
+                "username": username,
+                "created_at": data.get("created_at"),
+                "last_login": data.get("last_login"),
+                "created_by": data.get("created_by", "system")
+            })
     
     return jsonify({"success": True, "users": user_list})
-
-@app.route("/api/admin/servers", methods=["GET"])
-def get_all_servers():
-    """الحصول على قائمة بجميع السيرفرات في النظام (للمسؤول فقط)"""
-    if 'username' not in session or not is_admin(session['username']):
-        return jsonify({"success": False, "message": "غير مصرح"}), 403
-    
-    all_servers = []
-    if os.path.exists(USERS_DIR):
-        for username in os.listdir(USERS_DIR):
-            user_srv_dir = os.path.join(USERS_DIR, username, "SERVERS")
-            if os.path.exists(user_srv_dir):
-                for folder in os.listdir(user_srv_dir):
-                    srv_path = os.path.join(user_srv_dir, folder)
-                    if os.path.isdir(srv_path):
-                        meta_path = os.path.join(srv_path, "meta.json")
-                        display_name = folder
-                        if os.path.exists(meta_path):
-                            try:
-                                with open(meta_path, "r", encoding="utf-8") as f:
-                                    display_name = json.load(f).get("display_name", folder)
-                            except: pass
-                        
-                        all_servers.append({
-                            "owner": username,
-                            "folder": folder,
-                            "name": display_name,
-                            "path": srv_path
-                        })
-    
-    return jsonify({"success": True, "servers": all_servers})
 
 @app.route("/api/admin/delete-user", methods=["POST"])
 def delete_user():
@@ -1056,6 +807,6 @@ def delete_user():
     
     return jsonify({"success": True, "message": "تم حذف المستخدم بنجاح"})
 
-if __name__ == "__main__":
+iif __name__ == "__main__":
     port = int(os.environ.get("SERVER_PORT", 21910))
     app.run(host="0.0.0.0", port=port, debug=True)

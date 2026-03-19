@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1200px, initial-scale=0.5, maximum-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>دخول — OMAR BRO HOST</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -11,11 +11,10 @@
             background: #040812;
             min-height: 100vh;
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             justify-content: center;
             color: #fff;
             overflow-x: hidden;
-            padding: 40px 20px;
         }
         /* خلفية النجوم */
         #stars-canvas {
@@ -30,48 +29,35 @@
         .login-container {
             position: relative;
             z-index: 1;
+        }
+        .login-container {
             width: 100%;
             max-width: 500px;
             padding: 20px;
-            margin-top: 60px;
-            margin-bottom: 100px;
         }
         .login-card {
             background: rgba(15, 25, 45, 0.95);
             border: 2px solid #00d4ff;
             border-radius: 20px;
-            padding: 60px 50px;
+            padding: 50px 30px;
             box-shadow: 0 20px 60px rgba(0, 212, 255, 0.2);
             backdrop-filter: blur(10px);
-            min-width: 600px;
         }
         .logo-section {
             text-align: center;
             margin-bottom: 40px;
         }
         .logo-img {
-            width: 130px;
-            height: 130px;
-            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #00d4ff, #0066ff);
+            border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 60px;
             margin: 0 auto 20px;
-            padding: 4px;
-            background: linear-gradient(135deg, #00d4ff, #0066ff, #00aaff);
-            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.3), 0 0 25px rgba(0, 212, 255, 0.5), 0 0 50px rgba(0, 102, 255, 0.3);
-            animation: glow-pulse 2.5s ease-in-out infinite;
-        }
-        .logo-img img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            display: block;
-        }
-        @keyframes glow-pulse {
-            0%, 100% { box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.4), 0 0 25px rgba(0, 212, 255, 0.5), 0 0 50px rgba(0, 102, 255, 0.3); }
-            50% { box-shadow: 0 0 0 5px rgba(0, 212, 255, 0.7), 0 0 40px rgba(0, 212, 255, 0.8), 0 0 70px rgba(0, 102, 255, 0.5); }
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
         }
         .logo-name {
             font-size: 28px;
@@ -84,16 +70,6 @@
         }
         .form-group {
             margin-bottom: 20px;
-            position: relative;
-        }
-        .form-group .input-icon {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 18px;
-            color: #00d4ff;
-            pointer-events: none;
         }
         .form-group label {
             display: block;
@@ -104,7 +80,7 @@
         }
         .form-group input {
             width: 100%;
-            padding: 14px 16px 14px 45px;
+            padding: 14px 16px;
             background: rgba(255, 255, 255, 0.05);
             border: 2px solid rgba(0, 212, 255, 0.2);
             border-radius: 10px;
@@ -112,25 +88,10 @@
             font-size: 14px;
             outline: none;
             transition: all 0.3s;
-            position: relative;
         }
         .form-group input:focus {
             border-color: #00d4ff;
             background: rgba(0, 212, 255, 0.1);
-        }
-        .remember-me {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin: 15px 0;
-            font-size: 13px;
-            color: #8899aa;
-        }
-        .remember-me input {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            accent-color: #00d4ff;
         }
         .btn-login {
             width: 100%;
@@ -143,7 +104,7 @@
             font-size: 16px;
             cursor: pointer;
             transition: all 0.3s;
-            margin-top: 15px;
+            margin-top: 10px;
         }
         .btn-login:hover {
             transform: translateY(-3px);
@@ -238,10 +199,6 @@
             font-size: 12px;
             cursor: pointer;
             transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
         }
         .social-btn:hover {
             background: rgba(0, 212, 255, 0.2);
@@ -363,19 +320,11 @@
         .ai-send:hover {
             transform: translateY(-2px);
         }
-        .copyright-text {
-            text-align: center;
-            color: #8899aa;
-            font-size: 12px;
-            margin-top: 10px;
-        }
         @media (max-width: 600px) {
             .login-card { padding: 30px 20px; }
             .features-grid { grid-template-columns: 1fr; }
             .stats-section { grid-template-columns: 1fr 1fr; }
             .ai-button { width: 60px; height: 60px; font-size: 28px; bottom: 20px; right: 20px; }
-            body { padding: 20px 10px; }
-            .login-container { margin-top: 40px; margin-bottom: 80px; }
         }
     </style>
 </head>
@@ -384,9 +333,7 @@
     <div class="login-container">
         <div class="login-card">
             <div class="logo-section">
-                <div class="logo-img">
-                    <img src="/static/profile_image.png" alt="OMAR BRO HOST">
-                </div>
+                <div class="logo-img">🖥️</div>
                 <div class="logo-name">OMAR BRO HOST</div>
             </div>
 
@@ -395,19 +342,13 @@
             <form id="loginForm">
                 <div class="form-group">
                     <label>اسم المستخدم</label>
-                    <span class="input-icon">👤</span>
                     <input type="text" id="username" placeholder="أدخل اسم المستخدم" required>
                 </div>
                 <div class="form-group">
                     <label>كلمة المرور</label>
-                    <span class="input-icon">🔒</span>
                     <input type="password" id="password" placeholder="أدخل كلمة المرور" required>
                 </div>
-                <label class="remember-me">
-                    <input type="checkbox" id="rememberMe">
-                    <span>تذكرني لمدة 30 يوماً</span>
-                </label>
-                <button type="submit" class="btn-login">🚀 دخول</button>
+                <button type="submit" class="btn-login">دخول</button>
             </form>
 
             <div class="features-section">
@@ -450,13 +391,8 @@
 
             <div class="footer-section">
                 <div class="social-btns">
-                    <button onclick="openDeveloper()" class="social-btn" style="cursor:pointer; border:none; font-family:'Tajawal',sans-serif;">💬 تواصل مع المطور</button>
-                    <button onclick="openChannel()" class="social-btn" style="cursor:pointer; border:none; font-family:'Tajawal',sans-serif;">📢 القناة الرسمية</button>
-                </div>
-                <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid rgba(0, 212, 255, 0.2);">
-                    <p style="color: #8899aa; font-size: 12px; margin-bottom: 8px;">🔐 جميع الحقوق محفوظة</p>
-                    <p style="color: #00d4ff; font-size: 14px; font-weight: 900; letter-spacing: 1px;">© OMAR 2026</p>
-                    <p style="color: #8899aa; font-size: 11px; margin-top: 8px;">OMAR BRO HOST™</p>
+                    <a href="https://t.me/RLH55" target="_blank" class="social-btn">👨‍💻 المطور @RLH55</a>
+                    <a href="https://t.me/RLH5500" target="_blank" class="social-btn">📢 القناة @RLH5500</a>
                 </div>
             </div>
         </div>
@@ -510,24 +446,12 @@
             document.getElementById('aiModal').classList.toggle('active');
         }
 
-        // زر المطور - يفتح تيليجرام المطور
-        function openDeveloper() {
-            window.open('https://t.me/RLH55', '_blank');
-        }
-
-        // زر القناة - يفتح قناة التيليجرام
-        function openChannel() {
-            window.open('https://t.me/RLH5500', '_blank');
-        }
-
-        async function sendAIMessage() {
+        function sendAIMessage() {
             const input = document.getElementById('aiInput');
             const msg = input.value.trim();
             if (!msg) return;
 
             const messagesBox = document.getElementById('aiMessages');
-            
-            // إضافة رسالة المستخدم
             const userMsg = document.createElement('div');
             userMsg.className = 'ai-message user';
             userMsg.textContent = msg;
@@ -535,30 +459,13 @@
             input.value = '';
             messagesBox.scrollTop = messagesBox.scrollHeight;
 
-            // إضافة رسالة "جاري التفكير..."
-            const botMsg = document.createElement('div');
-            botMsg.className = 'ai-message bot';
-            botMsg.innerHTML = '<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span> جاري التفكير';
-            messagesBox.appendChild(botMsg);
-            messagesBox.scrollTop = messagesBox.scrollHeight;
-
-            try {
-                const res = await fetch('/api/ai/chat', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({message: msg})
-                });
-                const data = await res.json();
-                
-                if (data.success) {
-                    botMsg.textContent = data.reply;
-                } else {
-                    botMsg.textContent = '❌ عذراً، حدث خطأ في الاتصال بالذكاء الاصطناعي.';
-                }
-            } catch (err) {
-                botMsg.textContent = '❌ فشل الاتصال بالخادم.';
-            }
-            messagesBox.scrollTop = messagesBox.scrollHeight;
+            setTimeout(() => {
+                const botMsg = document.createElement('div');
+                botMsg.className = 'ai-message bot';
+                botMsg.textContent = '🤖 شكراً على سؤالك! سيقوم فريق الدعم بالرد عليك قريباً.';
+                messagesBox.appendChild(botMsg);
+                messagesBox.scrollTop = messagesBox.scrollHeight;
+            }, 500);
         }
 
         document.getElementById('aiInput').onkeypress = (e) => {

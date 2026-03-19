@@ -4,5 +4,3 @@ requests>=2.31.0
 python-telegram-bot>=20.5
 gunicorn>=21.2.0
 werkzeug
-pymongo
-dnspython

@@ -151,46 +151,6 @@ def get_support():
     with open(SUPPORT_CHAT_FILE, "r", encoding="utf-8") as f: chats = json.load(f)
     return jsonify({"messages": chats.get(session['username'], [])})
 
-# AI Chat API (DeepSeek)
-@app.route('/api/ai/chat', methods=['POST'])
-def ai_chat():
-    data = request.get_json()
-    user_msg = data.get('message', '').strip()
-    if not user_msg:
-        return jsonify({"success": False, "message": "رسالة فارغة"})
-
-    api_key = "DarkAI-DeepAI-EFF939A9130A0ABAE3A7414D"
-    model = "v3" # v3 للنموذج السريع، r1 للنموذج المفكر
-    
-    try:
-        # استخدام API الخاص بـ DarkAI/DeepSeek
-        response = requests.post(
-            "https://api.darkai.foundation/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": model,
-                "messages": [
-                    {"role": "system", "content": "أنت مساعد ذكي وخبير في البرمجة وإدارة السيرفرات، اسمك مساعد OMAR BRO HOST. أجب باللغة العربية دائماً وبشكل احترافي."},
-                    {"role": "user", "content": user_msg}
-                ],
-                "stream": False
-            },
-            timeout=30
-        )
-        
-        if response.status_code == 200:
-            ai_res = response.json()
-            content = ai_res['choices'][0]['message']['content']
-            return jsonify({"success": True, "reply": content})
-        else:
-            return jsonify({"success": False, "message": f"خطأ من المزود: {response.status_code}"})
-            
-    except Exception as e:
-        return jsonify({"success": False, "message": f"فشل الاتصال بالذكاء الاصطناعي: {str(e)}"})
-
 # Metrics API
 @app.route('/api/system/metrics')
 def get_metrics():

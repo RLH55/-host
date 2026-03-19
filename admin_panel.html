@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة المسؤول — OMAR BRO HOST</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -15,17 +16,12 @@
         }
         #stars-canvas {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             z-index: 0;
             pointer-events: none;
         }
-        .topbar, .container {
-            position: relative;
-            z-index: 1;
-        }
+        .topbar, .container { position: relative; z-index: 1; }
         .topbar {
             background: rgba(15, 25, 45, 0.95);
             border-bottom: 2px solid rgba(255, 215, 0, 0.3);
@@ -39,12 +35,12 @@
         }
         .logo { font-size: 20px; font-weight: 900; color: #FFD700; }
         .topbar-right { display: flex; gap: 15px; align-items: center; }
-        .btn-logout { background: rgba(255, 68, 68, 0.1); border: 2px solid #ff4444; color: #ff6666; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 700; }
+        .btn-logout { background: rgba(255, 68, 68, 0.1); border: 2px solid #ff4444; color: #ff6666; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 700; font-family: 'Tajawal', sans-serif; }
         
         .container { max-width: 1400px; margin: 0 auto; padding: 30px; }
         
         .tabs { display: flex; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
-        .tab-btn { background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(255, 215, 0, 0.2); color: #8899aa; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 700; transition: all 0.3s; }
+        .tab-btn { background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(255, 215, 0, 0.2); color: #8899aa; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 700; transition: all 0.3s; font-family: 'Tajawal', sans-serif; }
         .tab-btn.active { background: linear-gradient(135deg, #FFD700, #FFA500); color: #000; border-color: transparent; }
         
         .tab-content { display: none; }
@@ -55,12 +51,12 @@
         
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; margin-bottom: 8px; color: #8899aa; font-weight: 600; font-size: 13px; }
-        .form-group input, .form-group select { width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(255, 215, 0, 0.2); border-radius: 8px; color: #fff; font-size: 13px; outline: none; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(255, 215, 0, 0.2); border-radius: 8px; color: #fff; font-size: 13px; outline: none; font-family: 'Tajawal', sans-serif; }
         .form-group input:focus, .form-group select:focus { border-color: #FFD700; background: rgba(255, 215, 0, 0.1); }
         
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         
-        .btn-primary { width: 100%; padding: 14px; background: linear-gradient(135deg, #FFD700, #FFA500); border: none; border-radius: 8px; color: #000; font-weight: 900; cursor: pointer; transition: all 0.3s; }
+        .btn-primary { width: 100%; padding: 14px; background: linear-gradient(135deg, #FFD700, #FFA500); border: none; border-radius: 8px; color: #000; font-weight: 900; cursor: pointer; transition: all 0.3s; font-family: 'Tajawal', sans-serif; }
         .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(255, 215, 0, 0.4); }
         
         .users-table { width: 100%; border-collapse: collapse; }
@@ -72,25 +68,66 @@
         .user-badge.admin { background: rgba(255, 215, 0, 0.2); color: #FFD700; }
         .user-badge.user { background: rgba(0, 212, 255, 0.2); color: #00d4ff; }
         
-        .btn-action { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 700; }
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+        .status-badge.running { background: rgba(0, 255, 136, 0.2); color: #00ff88; }
+        .status-badge.stopped { background: rgba(255, 68, 68, 0.2); color: #ff6666; }
+        
+        .btn-action { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 700; font-family: 'Tajawal', sans-serif; margin: 2px; }
         .btn-edit { background: rgba(0, 212, 255, 0.2); color: #00d4ff; }
         .btn-delete { background: rgba(255, 68, 68, 0.2); color: #ff6666; }
+        .btn-start { background: rgba(0, 255, 136, 0.2); color: #00ff88; }
+        .btn-stop { background: rgba(255, 170, 0, 0.2); color: #ffaa00; }
+        .btn-console { background: rgba(138, 43, 226, 0.3); color: #c084fc; }
         
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .stat-card { background: rgba(255, 215, 0, 0.1); border: 2px solid rgba(255, 215, 0, 0.3); padding: 20px; border-radius: 12px; text-align: center; }
         .stat-value { font-size: 32px; font-weight: 900; color: #FFD700; }
         .stat-label { color: #8899aa; font-size: 12px; margin-top: 8px; }
         
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .section-title { font-size: 18px; font-weight: 900; color: #FFD700; }
+        .search-box { width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(255, 215, 0, 0.2); border-radius: 8px; color: #fff; margin-bottom: 20px; font-family: 'Tajawal', sans-serif; outline: none; }
         
-        .search-box { width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(255, 215, 0, 0.2); border-radius: 8px; color: #fff; margin-bottom: 20px; }
-        
+        /* Modal */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); z-index: 1000; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
-        .modal-box { background: rgba(15, 25, 45, 0.98); border: 2px solid #FFD700; border-radius: 15px; padding: 30px; width: 90%; max-width: 500px; }
-        .modal-title { font-size: 18px; font-weight: 900; color: #FFD700; margin-bottom: 20px; }
-        .modal-close { float: left; background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; }
+        .modal-box { background: rgba(10, 15, 30, 0.99); border: 2px solid #FFD700; border-radius: 15px; padding: 30px; width: 95%; max-width: 900px; max-height: 90vh; overflow-y: auto; }
+        .modal-title { font-size: 18px; font-weight: 900; color: #FFD700; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .modal-close { background: rgba(255,68,68,0.2); border: 1px solid #ff4444; color: #ff6666; font-size: 18px; cursor: pointer; border-radius: 6px; padding: 4px 10px; font-family: 'Tajawal', sans-serif; }
+        
+        /* Console */
+        .console-box {
+            background: #000;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 10px;
+            padding: 16px;
+            height: 380px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #00ff88;
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin-bottom: 15px;
+        }
+        .console-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .console-title { color: #00d4ff; font-weight: 700; font-size: 14px; }
+        .console-status { display: flex; align-items: center; gap: 8px; }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        .status-dot.online { background: #00ff88; box-shadow: 0 0 8px #00ff88; animation: pulse 2s infinite; }
+        .status-dot.offline { background: #ff4444; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        
+        .console-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn-sm { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 700; font-family: 'Tajawal', sans-serif; transition: all 0.2s; }
+        .btn-green { background: rgba(0, 255, 136, 0.2); color: #00ff88; border: 1px solid rgba(0,255,136,0.4); }
+        .btn-red { background: rgba(255, 68, 68, 0.2); color: #ff6666; border: 1px solid rgba(255,68,68,0.4); }
+        .btn-blue { background: rgba(0, 212, 255, 0.2); color: #00d4ff; border: 1px solid rgba(0,212,255,0.4); }
+        .btn-purple { background: rgba(138, 43, 226, 0.2); color: #c084fc; border: 1px solid rgba(138,43,226,0.4); }
+        .btn-sm:hover { transform: translateY(-1px); opacity: 0.9; }
+        
+        .server-info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 15px; }
+        .info-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,215,0,0.2); border-radius: 8px; padding: 10px; text-align: center; }
+        .info-label { font-size: 11px; color: #8899aa; }
+        .info-value { font-size: 14px; font-weight: 700; color: #FFD700; margin-top: 4px; }
         
         .alert { padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; }
         .alert-success { background: rgba(0, 255, 136, 0.1); border: 2px solid rgba(0, 255, 136, 0.3); color: #00ff88; }
@@ -100,25 +137,26 @@
             .form-row { grid-template-columns: 1fr; }
             .stats-grid { grid-template-columns: 1fr; }
             .tabs { flex-direction: column; }
+            .modal-box { padding: 15px; }
         }
     </style>
 </head>
 <body>
     <canvas id="stars-canvas"></canvas>
     <div class="topbar">
-        <div class="logo">⭐ لوحة المسؤول</div>
+        <div class="logo">⭐ لوحة المسؤول — OMAR BRO HOST</div>
         <div class="topbar-right">
-            <span style="color: #8899aa; font-size: 13px;">مرحباً، <strong>OMAR_ADMIN</strong></span>
+            <span style="color: #8899aa; font-size: 13px;">مرحباً، <strong style="color:#FFD700;">OMAR_ADMIN</strong></span>
             <button class="btn-logout" onclick="logout()">تسجيل الخروج</button>
         </div>
     </div>
 
     <div class="container">
         <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('dashboard')">📊 لوحة التحكم</button>
-            <button class="tab-btn" onclick="switchTab('users')">👥 إدارة المستخدمين</button>
-            <button class="tab-btn" onclick="switchTab('servers')">🖥️ إدارة السيرفرات</button>
-            <button class="tab-btn" onclick="switchTab('settings')">⚙️ الإعدادات</button>
+            <button class="tab-btn active" onclick="switchTab('dashboard', this)">📊 لوحة التحكم</button>
+            <button class="tab-btn" onclick="switchTab('users', this)">👥 إدارة المستخدمين</button>
+            <button class="tab-btn" onclick="switchTab('servers', this)">🖥️ إدارة السيرفرات</button>
+            <button class="tab-btn" onclick="switchTab('settings', this)">⚙️ الإعدادات</button>
         </div>
 
         <!-- Dashboard Tab -->
@@ -141,7 +179,6 @@
                     <div class="stat-label">توفر الخدمة</div>
                 </div>
             </div>
-
             <div class="card">
                 <div class="card-title">📈 آخر الأنشطة</div>
                 <p style="color: #8899aa; font-size: 13px;">تم تحديث لوحة التحكم في <span id="lastUpdate">الآن</span></p>
@@ -156,32 +193,29 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>اسم المستخدم</label>
-                        <input type="text" id="newUsername" placeholder="أدخل اسم المستخدم" autocomplete="off" value="">
+                        <input type="text" id="newUsername" placeholder="أدخل اسم المستخدم">
                     </div>
                     <div class="form-group">
                         <label>كلمة المرور</label>
-                        <input type="password" id="newPassword" placeholder="أدخل كلمة المرور" autocomplete="new-password" value="">
+                        <input type="password" id="newPassword" placeholder="أدخل كلمة المرور">
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label>عدد السيرفرات المسموح بها</label>
-                        <input type="number" id="maxServers" placeholder="مثال: 3" min="1" max="20" value="">
+                        <input type="number" id="maxServers" value="3" min="1" max="20">
                     </div>
                     <div class="form-group">
                         <label>عدد الأيام (الصلاحية)</label>
-                        <input type="number" id="expiryDays" placeholder="مثال: 30" min="1" max="365" value="">
+                        <input type="number" id="expiryDays" value="30" min="1" max="365">
                     </div>
                 </div>
-                <button class="btn-primary" onclick="createNewUser()">&#10024; إنشاء الحساب</button>
+                <button class="btn-primary" onclick="createNewUser()">✨ إنشاء الحساب</button>
             </div>
 
             <div class="card">
-                <div class="section-header">
-                    <div class="card-title">📋 قائمة المستخدمين</div>
-                    <button class="btn-action btn-edit" onclick="loadUsers()" style="padding: 8px 16px; font-size: 13px;">🔄 تحديث القائمة</button>
-                </div>
-                <input type="text" class="search-box" id="userSearch" placeholder="ابحث عن مستخدم...">
+                <div class="card-title">📋 قائمة المستخدمين</div>
+                <input type="text" class="search-box" id="userSearch" placeholder="ابحث عن مستخدم..." oninput="filterUsers()">
                 <table class="users-table">
                     <thead>
                         <tr>
@@ -201,15 +235,17 @@
         <!-- Servers Tab -->
         <div id="serversTab" class="tab-content">
             <div class="card">
-                <div class="card-title">🖥️ إدارة السيرفرات</div>
-                <p style="color: #8899aa; font-size: 13px;">عرض وإدارة جميع السيرفرات المنشأة في النظام</p>
-                <table class="users-table" style="margin-top: 20px;">
+                <div class="card-title">🖥️ إدارة سيرفرات المستخدمين</div>
+                <p style="color: #8899aa; font-size: 13px; margin-bottom: 15px;">يمكنك عرض وإدارة جميع سيرفرات المستخدمين والدخول إلى كونسولها مباشرة</p>
+                <input type="text" class="search-box" id="serverSearch" placeholder="ابحث عن سيرفر أو مستخدم..." oninput="filterServers()">
+                <table class="users-table">
                     <thead>
                         <tr>
                             <th>اسم السيرفر</th>
                             <th>المالك</th>
                             <th>النوع</th>
                             <th>الحالة</th>
+                            <th>البورت</th>
                             <th>تاريخ الإنشاء</th>
                             <th>الإجراءات</th>
                         </tr>
@@ -224,12 +260,12 @@
             <div class="card">
                 <div class="card-title">⚙️ إعدادات النظام</div>
                 <div class="form-group">
-                    <label>اسم الموقع</label>
+                    <label>اسم المنصة</label>
                     <input type="text" value="OMAR BRO HOST" readonly>
                 </div>
                 <div class="form-group">
                     <label>الإصدار</label>
-                    <input type="text" value="v2.0.0" readonly>
+                    <input type="text" value="v2.1.0" readonly>
                 </div>
                 <div class="form-group">
                     <label>حد أقصى للسيرفرات لكل مستخدم</label>
@@ -237,142 +273,260 @@
                 </div>
                 <div class="form-group">
                     <label>الحد الأقصى لحجم الملف (MB)</label>
-                    <input type="number" value="100" min="10" max="500">
+                    <input type="number" value="200" min="10" max="500">
                 </div>
                 <button class="btn-primary">💾 حفظ الإعدادات</button>
             </div>
-
             <div class="card">
                 <div class="card-title">🔒 الأمان</div>
                 <div class="form-group">
-                    <label>تفعيل المصادقة الثنائية</label>
-                    <select>
-                        <option>معطلة</option>
-                        <option>مفعلة</option>
-                    </select>
+                    <label>اسم المسؤول</label>
+                    <input type="text" value="OMAR_ADMIN" readonly>
+                </div>
+                <div class="form-group">
+                    <label>كلمة مرور المسؤول</label>
+                    <input type="password" value="OMAR_2026_BRO" readonly>
                 </div>
                 <button class="btn-primary">🔐 تحديث كلمة المرور</button>
             </div>
         </div>
     </div>
 
+    <!-- Console Modal -->
+    <div class="modal" id="consoleModal">
+        <div class="modal-box">
+            <div class="modal-title">
+                <span>🖥️ كونسول السيرفر: <span id="modalServerName">—</span></span>
+                <button class="modal-close" onclick="closeConsole()">✕ إغلاق</button>
+            </div>
+            
+            <div class="server-info-grid">
+                <div class="info-item">
+                    <div class="info-label">المالك</div>
+                    <div class="info-value" id="modalOwner">—</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">الحالة</div>
+                    <div class="info-value" id="modalStatus">—</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">البورت</div>
+                    <div class="info-value" id="modalPort">—</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">الذاكرة</div>
+                    <div class="info-value" id="modalMem">—</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">المعالج</div>
+                    <div class="info-value" id="modalCpu">—</div>
+                </div>
+            </div>
+            
+            <div class="console-header">
+                <div class="console-title">
+                    <span class="status-dot offline" id="consoleDot"></span>
+                    📟 مخرجات الكونسول
+                </div>
+                <div class="console-actions">
+                    <button class="btn-sm btn-green" onclick="adminServerAction('start')">▶ تشغيل</button>
+                    <button class="btn-sm btn-red" onclick="adminServerAction('stop')">⏹ إيقاف</button>
+                    <button class="btn-sm btn-blue" onclick="adminServerAction('restart')">🔄 إعادة تشغيل</button>
+                    <button class="btn-sm btn-purple" onclick="refreshConsole()">🔃 تحديث</button>
+                </div>
+            </div>
+            
+            <div class="console-box" id="adminConsoleOutput">في انتظار المخرجات...</div>
+            
+            <div style="color: #8899aa; font-size: 11px; text-align: center;">
+                يتم التحديث التلقائي كل 3 ثوانٍ عند فتح الكونسول
+            </div>
+        </div>
+    </div>
+
     <script>
-        function switchTab(tab) {
+        let allUsers = [];
+        let allServers = [];
+        let currentFolder = null;
+        let consoleInterval = null;
+
+        function switchTab(tab, btn) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(tab + 'Tab').classList.add('active');
-            event.target.classList.add('active');
-
+            if (btn) btn.classList.add('active');
             if (tab === 'users') loadUsers();
             if (tab === 'servers') loadServers();
             if (tab === 'dashboard') loadDashboard();
         }
 
         async function loadDashboard() {
-            const res = await fetch('/api/admin/users');
-            const data = await res.json();
-            document.getElementById('totalUsers').textContent = data.users.length;
-            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('ar-SA');
+            try {
+                const [usersRes, serversRes] = await Promise.all([
+                    fetch('/api/admin/users'),
+                    fetch('/api/admin/all-servers')
+                ]);
+                const usersData = await usersRes.json();
+                const serversData = await serversRes.json();
+                
+                document.getElementById('totalUsers').textContent = usersData.users ? usersData.users.length : 0;
+                document.getElementById('totalServers').textContent = serversData.servers ? serversData.servers.length : 0;
+                document.getElementById('activeServers').textContent = serversData.servers ? serversData.servers.filter(s => s.status === 'Running').length : 0;
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('ar-SA');
+            } catch(e) {}
         }
 
         async function loadUsers() {
             const res = await fetch('/api/admin/users');
             const data = await res.json();
+            allUsers = data.users || [];
+            renderUsers(allUsers);
+        }
+
+        function renderUsers(users) {
             const list = document.getElementById('usersList');
-            list.innerHTML = data.users.map(u => `
+            list.innerHTML = users.map(u => `
                 <tr>
                     <td><strong>${u.username}</strong></td>
                     <td><span class="user-badge ${u.is_admin ? 'admin' : 'user'}">${u.is_admin ? '👑 مسؤول' : '👤 مستخدم'}</span></td>
-                    <td>${u.server_count || 0}</td>
-                    <td>${u.expiry_days || 30}</td>
-                    <td style="font-size: 11px; color: #8899aa;">${u.created_at ? u.created_at.substring(0, 10) : '---'}</td>
+                    <td>${u.max_servers}</td>
+                    <td>${u.expiry_days}</td>
+                    <td style="font-size: 11px; color: #8899aa;">${(u.created_at || '').substring(0, 10)}</td>
                     <td>
-                        ${u.username !== 'OMAROMAR1983' ? `<button class="btn-action btn-delete" onclick="deleteUser('${u.username}')">🗑️ حذف</button>` : '<span style="color: #8899aa;">محمي</span>'}
+                        ${u.username !== 'OMAR_ADMIN' ? `<button class="btn-action btn-delete" onclick="deleteUser('${u.username}')">🗑️ حذف</button>` : '<span style="color: #8899aa;">محمي</span>'}
                     </td>
                 </tr>
             `).join('');
+        }
+
+        function filterUsers() {
+            const q = document.getElementById('userSearch').value.toLowerCase();
+            renderUsers(allUsers.filter(u => u.username.toLowerCase().includes(q)));
         }
 
         async function loadServers() {
-            const res = await fetch('/api/admin/servers');
+            const res = await fetch('/api/admin/all-servers');
             const data = await res.json();
+            allServers = data.servers || [];
+            renderServers(allServers);
+        }
+
+        function renderServers(servers) {
             const list = document.getElementById('serversList');
-            
-            if (!data.servers || data.servers.length === 0) {
-                list.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #8899aa;">لا توجد سيرفرات حالياً</td></tr>';
+            if (servers.length === 0) {
+                list.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #8899aa; padding: 30px;">لا توجد سيرفرات حالياً</td></tr>';
                 return;
             }
-
-            list.innerHTML = data.servers.map(s => `
+            list.innerHTML = servers.map(s => `
                 <tr>
-                    <td><strong>${s.name}</strong></td>
-                    <td>${s.owner}</td>
-                    <td>Python</td>
-                    <td><span class="user-badge admin">نشط</span></td>
+                    <td><strong style="color: #00d4ff;">${s.name || s.folder}</strong></td>
+                    <td><span style="color: #FFD700;">👤 ${s.owner}</span></td>
+                    <td><span style="color: #8899aa; font-size: 12px;">${s.type || 'Python'}</span></td>
                     <td>
-                        <button class="btn-action btn-edit" onclick="visitServer('${s.owner}', '${s.folder}')">👁️ زيارة</button>
-                        <button class="btn-action btn-delete" onclick="deleteServerAdmin('${s.folder}')">🗑️ حذف</button>
+                        <span class="status-badge ${s.status === 'Running' ? 'running' : 'stopped'}">
+                            ${s.status === 'Running' ? '🟢 يعمل' : '🔴 متوقف'}
+                        </span>
+                    </td>
+                    <td><span style="color: #00d4ff; font-size: 12px;">${s.port || '—'}</span></td>
+                    <td style="font-size: 11px; color: #8899aa;">${(s.created_at || '').substring(0, 10)}</td>
+                    <td>
+                        <button class="btn-action btn-console" onclick="openConsole('${s.folder}', '${s.name || s.folder}')">🖥️ كونسول</button>
+                        ${s.status !== 'Running' ? `<button class="btn-action btn-start" onclick="quickAction('${s.folder}', 'start')">▶ تشغيل</button>` : `<button class="btn-action btn-stop" onclick="quickAction('${s.folder}', 'stop')">⏹ إيقاف</button>`}
                     </td>
                 </tr>
             `).join('');
         }
 
-        function visitServer(owner, folder) {
-            // آلية لزيارة السيرفر كأدمن
-            sessionStorage.setItem('admin_view_user', owner);
-            sessionStorage.setItem('admin_view_folder', folder);
-            window.location.href = '/index.html';
+        function filterServers() {
+            const q = document.getElementById('serverSearch').value.toLowerCase();
+            renderServers(allServers.filter(s => 
+                (s.name || s.folder).toLowerCase().includes(q) || 
+                s.owner.toLowerCase().includes(q)
+            ));
         }
 
-        async function deleteServerAdmin(folder) {
-            if (!confirm('هل أنت متأكد من حذف هذا السيرفر نهائياً؟')) return;
-            const res = await fetch(`/server/delete/${folder}`, { method: 'POST' });
+        async function openConsole(folder, name) {
+            currentFolder = folder;
+            document.getElementById('modalServerName').textContent = name;
+            document.getElementById('consoleModal').classList.add('active');
+            await refreshConsole();
+            // تحديث تلقائي كل 3 ثوانٍ
+            if (consoleInterval) clearInterval(consoleInterval);
+            consoleInterval = setInterval(refreshConsole, 3000);
+        }
+
+        function closeConsole() {
+            document.getElementById('consoleModal').classList.remove('active');
+            if (consoleInterval) { clearInterval(consoleInterval); consoleInterval = null; }
+            currentFolder = null;
+        }
+
+        async function refreshConsole() {
+            if (!currentFolder) return;
+            try {
+                const res = await fetch(`/api/admin/server-stats/${currentFolder}`);
+                const data = await res.json();
+                if (!data.success) return;
+                
+                document.getElementById('modalOwner').textContent = data.owner || '—';
+                document.getElementById('modalStatus').textContent = data.status === 'Running' ? '🟢 يعمل' : '🔴 متوقف';
+                document.getElementById('modalPort').textContent = data.port || '—';
+                document.getElementById('modalMem').textContent = data.mem || '0 MB';
+                document.getElementById('modalCpu').textContent = data.cpu || '0%';
+                
+                const dot = document.getElementById('consoleDot');
+                dot.className = 'status-dot ' + (data.status === 'Running' ? 'online' : 'offline');
+                
+                const box = document.getElementById('adminConsoleOutput');
+                const logs = data.logs || 'لا توجد مخرجات بعد...';
+                box.textContent = logs;
+                box.scrollTop = box.scrollHeight;
+            } catch(e) {}
+        }
+
+        async function adminServerAction(action) {
+            if (!currentFolder) return;
+            const res = await fetch(`/api/admin/server-action/${currentFolder}/${action}`, {method: 'POST'});
             const data = await res.json();
             if (data.success) {
-                loadServers();
-                loadDashboard();
+                setTimeout(refreshConsole, 1000);
+                setTimeout(loadServers, 1500);
             }
+            showToast(data.message || (data.success ? '✅ تم' : '❌ فشل'), data.success ? 'success' : 'error');
+        }
+
+        async function quickAction(folder, action) {
+            const res = await fetch(`/api/admin/server-action/${folder}/${action}`, {method: 'POST'});
+            const data = await res.json();
+            showToast(data.message || (data.success ? '✅ تم' : '❌ فشل'), data.success ? 'success' : 'error');
+            setTimeout(loadServers, 1000);
         }
 
         async function createNewUser() {
             const username = document.getElementById('newUsername').value.trim();
             const password = document.getElementById('newPassword').value.trim();
-            const max_servers = parseInt(document.getElementById('maxServers').value) || 3;
-            const expiry_days = parseInt(document.getElementById('expiryDays').value) || 30;
+            const max_servers = document.getElementById('maxServers').value;
+            const expiry_days = document.getElementById('expiryDays').value;
 
-            if (!username) {
-                showAlert('userAlert', '⚠️ الرجاء إدخال اسم المستخدم', 'error');
-                document.getElementById('newUsername').focus();
-                return;
-            }
-            if (!password) {
-                showAlert('userAlert', '⚠️ الرجاء إدخال كلمة المرور', 'error');
-                document.getElementById('newPassword').focus();
+            if (!username || !password) {
+                showAlert('userAlert', 'الرجاء ملء جميع الحقول', 'error');
                 return;
             }
 
-            try {
-                const res = await fetch('/api/admin/create-user', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({username, password, max_servers, expiry_days})
-                });
-                const data = await res.json();
+            const res = await fetch('/api/admin/create-user', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username, password, max_servers, expiry_days})
+            });
+            const data = await res.json();
 
-                if (data.success) {
-                    showAlert('userAlert', '✅ تم إنشاء الحساب بنجاح!', 'success');
-                    // إفراغ جميع الحقول بعد الإنشاء
-                    document.getElementById('newUsername').value = '';
-                    document.getElementById('newPassword').value = '';
-                    document.getElementById('maxServers').value = '';
-                    document.getElementById('expiryDays').value = '';
-                    document.getElementById('newUsername').focus();
-                    loadUsers();
-                } else {
-                    showAlert('userAlert', '❌ ' + (data.message || 'حدث خطأ'), 'error');
-                }
-            } catch(e) {
-                showAlert('userAlert', '❌ خطأ في الاتصال', 'error');
+            if (data.success) {
+                showAlert('userAlert', '✅ تم إنشاء الحساب بنجاح', 'success');
+                document.getElementById('newUsername').value = '';
+                document.getElementById('newPassword').value = '';
+                loadUsers();
+            } else {
+                showAlert('userAlert', '❌ ' + data.message, 'error');
             }
         }
 
@@ -385,10 +539,8 @@
             });
             const data = await res.json();
             if (data.success) {
-                showAlert('userAlert', `✅ تم حذف المستخدم ${username} بنجاح`, 'success');
                 loadUsers();
-            } else {
-                showAlert('userAlert', '❌ ' + (data.message || 'فشل الحذف'), 'error');
+                showToast('✅ تم حذف المستخدم', 'success');
             }
         }
 
@@ -398,16 +550,32 @@
             setTimeout(() => el.innerHTML = '', 5000);
         }
 
-        function logout() {
-            fetch('/api/logout', {method: 'POST'})
-                .then(() => {
-                    sessionStorage.clear();
-                    localStorage.removeItem('remember_token');
-                    window.location.replace('/login');
-                })
-                .catch(() => window.location.replace('/login'));
+        let toastTimeout;
+        function showToast(msg, type = 'info') {
+            let toast = document.getElementById('adminToast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'adminToast';
+                toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(10,20,40,0.98);border:2px solid #FFD700;color:#fff;padding:14px 28px;border-radius:12px;z-index:9999;font-size:14px;font-weight:700;display:none;font-family:Tajawal,sans-serif;';
+                document.body.appendChild(toast);
+            }
+            toast.textContent = msg;
+            toast.style.borderColor = type === 'success' ? '#00ff88' : type === 'error' ? '#ff4444' : '#FFD700';
+            toast.style.display = 'block';
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => toast.style.display = 'none', 3000);
         }
 
+        function logout() {
+            fetch('/api/logout', {method: 'POST'}).then(() => window.location.href = '/login');
+        }
+
+        // إغلاق المودال عند الضغط خارجه
+        document.getElementById('consoleModal').addEventListener('click', function(e) {
+            if (e.target === this) closeConsole();
+        });
+
+        // تحميل أولي
         loadDashboard();
 
         // خلفية النجوم المتحركة
@@ -417,59 +585,30 @@
             let stars = [];
             const NUM_STARS = 180;
             const SPEED = 0.3;
-
-            function resize() {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            }
-
+            function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
             function initStars() {
                 stars = [];
                 for (let i = 0; i < NUM_STARS; i++) {
-                    stars.push({
-                        x: Math.random() * canvas.width,
-                        y: Math.random() * canvas.height,
-                        r: Math.random() * 1.8 + 0.3,
-                        alpha: Math.random() * 0.7 + 0.3,
-                        speed: Math.random() * SPEED + 0.05,
-                        twinkle: Math.random() * Math.PI * 2
-                    });
+                    stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 1.8 + 0.3, alpha: Math.random() * 0.7 + 0.3, speed: Math.random() * SPEED + 0.05, twinkle: Math.random() * Math.PI * 2 });
                 }
             }
-
             function drawStars() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-                grad.addColorStop(0, '#040812');
-                grad.addColorStop(0.5, '#0a1428');
-                grad.addColorStop(1, '#0d1f3c');
-                ctx.fillStyle = grad;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+                grad.addColorStop(0, '#040812'); grad.addColorStop(0.5, '#0a1428'); grad.addColorStop(1, '#0d1f3c');
+                ctx.fillStyle = grad; ctx.fillRect(0, 0, canvas.width, canvas.height);
                 stars.forEach(s => {
                     s.twinkle += 0.02;
                     const alpha = s.alpha * (0.6 + 0.4 * Math.sin(s.twinkle));
-                    ctx.beginPath();
-                    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(200, 230, 255, ${alpha})`;
-                    ctx.fill();
+                    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(200, 230, 255, ${alpha})`; ctx.fill();
                     s.y += s.speed;
-                    if (s.y > canvas.height) {
-                        s.y = 0;
-                        s.x = Math.random() * canvas.width;
-                    }
+                    if (s.y > canvas.height) { s.y = 0; s.x = Math.random() * canvas.width; }
                 });
             }
-
-            function animate() {
-                drawStars();
-                requestAnimationFrame(animate);
-            }
-
+            function animate() { drawStars(); requestAnimationFrame(animate); }
             window.addEventListener('resize', () => { resize(); initStars(); });
-            resize();
-            initStars();
-            animate();
+            resize(); initStars(); animate();
         })();
     </script>
 </body>

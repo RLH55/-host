@@ -125,6 +125,5 @@ curl http://localhost:21910/proxy/8000/api/endpoint?param=value
 
 ---
 
-**تم إنشاؤه بواسطة**: OMAR BRO  
-**قناة التحديثات**: [Telegram - @RLH55](https://t.me/RLH55)  
+**تم إنشاؤه بواسطة**: Manus AI  
 **آخر تحديث**: مارس 2026
