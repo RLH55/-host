@@ -397,6 +397,38 @@ def api_current_user():
         })
     return jsonify({"success": False})
 
+@app.route("/api/servers_list")
+def api_servers_list():
+    if 'username' not in session:
+        return jsonify({"success": False}), 401
+    
+    servers = load_servers_list()
+    # إضافة حالة التشغيل لكل سيرفر
+    for s in servers:
+        proc_key = f"{session['username']}_{s['folder']}"
+        s['status'] = "Stopped"
+        if proc_key in running_procs:
+            if running_procs[proc_key].poll() is None:
+                s['status'] = "Running"
+            else:
+                del running_procs[proc_key]
+    
+    # جلب إحصائيات المستخدم
+    init_users_db()
+    with open(USERS_FILE, "r", encoding="utf-8") as f:
+        users = json.load(f)
+    user_data = users.get(session['username'], {})
+    
+    return jsonify({
+        "success": True,
+        "servers": servers,
+        "stats": {
+            "used": len(servers),
+            "total": user_data.get("max_servers", 3),
+            "expiry": user_data.get("expiry_days", 30)
+        }
+    })
+
 @app.route("/api/user/settings", methods=["GET", "POST"])
 def user_settings():
     if 'username' not in session:
@@ -492,12 +524,75 @@ def get_stats(folder):
         "ip": get_ip()
     })
 
-@app.route("/server/action/<folder>/<act>", methods=["POST"])
-def server_action(folder, act):
+@app.route("/server/status/<folder>")
+def server_status(folder):
     if 'username' not in session:
-        return jsonify({"success": False, "message": "غير مصرح"}), 401
+        return jsonify({"success": False}), 401
     
-    proc_key = f"{session['username']}_{folder}"
+    # تحديد مسار السيرفر (دعم الأدمن)
+    target_path = None
+    owner = session['username']
+    if is_admin(session['username']):
+        for u in os.listdir(USERS_DIR):
+            p = os.path.join(USERS_DIR, u, "SERVERS", folder)
+            if os.path.exists(p):
+                target_path = p
+                owner = u
+                break
+    else:
+        user_servers_dir = ensure_user_servers_dir()
+        target_path = os.path.join(user_servers_dir, folder)
+
+    if not target_path or not os.path.exists(target_path):
+        return jsonify({"success": False, "message": "غير موجود"}), 404
+
+    proc_key = f"{owner}_{folder}"
+    status = "Stopped"
+    if proc_key in running_procs:
+        if running_procs[proc_key].poll() is None:
+            status = "Running"
+        else:
+            del running_procs[proc_key]
+    
+    log_path = os.path.join(target_path, "server.log")
+    logs = ""
+    if os.path.exists(log_path):
+        try:
+            with open(log_path, "r", encoding="utf-8") as f:
+                logs = f.read()[-10000:] # آخر 10 آلاف حرف
+        except: pass
+    
+    meta_path = os.path.join(target_path, "meta.json")
+    display_name = folder
+    if os.path.exists(meta_path):
+        try:
+            with open(meta_path, "r", encoding="utf-8") as f:
+                display_name = json.load(f).get("display_name", folder)
+        except: pass
+
+    return jsonify({
+        "success": True,
+        "status": status,
+        "logs": logs,
+        "name": display_name,
+        "ip": get_ip(),
+        "port": "N/A" # bot.py لا يدعم البورتات حالياً
+    })
+
+@app.route("/server/action/<folder>/<act>", methods=["POST"])
+def server_act(folder, act):
+    if 'username' not in session:
+        return jsonify({"success": False}), 401
+    
+    # دعم الأدمن في تنفيذ الإجراءات
+    owner = session['username']
+    if is_admin(session['username']):
+        for u in os.listdir(USERS_DIR):
+            if os.path.exists(os.path.join(USERS_DIR, u, "SERVERS", folder)):
+                owner = u
+                break
+    
+    proc_key = f"{owner}_{folder}"
     
     if proc_key in running_procs:
         try:
@@ -666,17 +761,86 @@ def rename_file(folder):
 @app.route("/files/delete/<folder>", methods=["POST"])
 def delete_file(folder):
     if 'username' not in session:
-        return jsonify({"success": False}), 401
+        return jsonify({"success": False, "message": "غير مصرح"}), 401
     
-    user_servers_dir = ensure_user_servers_dir()
-    data = request.get_json()
-    file_path = os.path.join(user_servers_dir, folder, data['name'])
+    # تحديد مسار السيرفر بناءً على ما إذا كان المستخدم أدمن أم لا
+    if is_admin(session['username']):
+        # للأدمن: البحث عن السيرفر في كل مجلدات المستخدمين
+        target_path = None
+        for username in os.listdir(USERS_DIR):
+            p = os.path.join(USERS_DIR, username, "SERVERS", folder)
+            if os.path.exists(p):
+                target_path = p
+                break
+        if not target_path:
+            return jsonify({"success": False, "message": "السيرفر غير موجود"}), 404
+    else:
+        # للمستخدم العادي: سيرفراته فقط
+        user_servers_dir = ensure_user_servers_dir()
+        target_path = os.path.join(user_servers_dir, folder)
+        if not os.path.exists(target_path):
+            return jsonify({"success": False, "message": "غير مصرح"}), 403
+
+    data = request.get_json() or {}
+    names = data.get("names", data.get("name", []))
+    if isinstance(names, str): names = [names]
+    if not names:
+        return jsonify({"success": False, "message": "لم يتم تحديد ملفات"})
     
-    if not file_path.startswith(user_servers_dir):
-        return jsonify({"success": False}), 403
+    import shutil
+    deleted = 0
+    for name in names:
+        if not name or '..' in name or name.startswith('/'): continue
+        fpath = os.path.join(target_path, name)
+        try:
+            if os.path.isdir(fpath):
+                shutil.rmtree(fpath)
+                deleted += 1
+            elif os.path.exists(fpath):
+                os.remove(fpath)
+                deleted += 1
+        except: pass
     
-    os.remove(file_path)
-    return jsonify({"success": True})
+    return jsonify({"success": True, "message": f"تم حذف {deleted} ملف بنجاح"})
+
+@app.route("/server/delete/<folder>", methods=["POST"])
+def delete_server(folder):
+    """حذف سيرفر بالكامل"""
+    if 'username' not in session:
+        return jsonify({"success": False, "message": "غير مصرح"}), 401
+    
+    target_path = None
+    if is_admin(session['username']):
+        for username in os.listdir(USERS_DIR):
+            p = os.path.join(USERS_DIR, username, "SERVERS", folder)
+            if os.path.exists(p):
+                target_path = p
+                break
+    else:
+        user_servers_dir = ensure_user_servers_dir()
+        target_path = os.path.join(user_servers_dir, folder)
+        if not os.path.exists(target_path):
+            target_path = None
+
+    if not target_path:
+        return jsonify({"success": False, "message": "السيرفر غير موجود أو غير مصرح بحذفه"})
+
+    # إيقاف أي عملية مرتبطة بالسيرفر
+    proc_key = f"{session['username']}_{folder}"
+    if proc_key in running_procs:
+        try:
+            p = psutil.Process(running_procs[proc_key].pid)
+            for child in p.children(recursive=True): child.kill()
+            p.kill()
+        except: pass
+        del running_procs[proc_key]
+
+    import shutil
+    try:
+        shutil.rmtree(target_path)
+        return jsonify({"success": True, "message": "تم حذف السيرفر نهائياً"})
+    except Exception as e:
+        return jsonify({"success": False, "message": f"خطأ أثناء الحذف: {str(e)}"})
 
 @app.route("/files/install/<folder>", methods=["POST"])
 def install_req(folder):
@@ -781,15 +945,54 @@ def get_all_users():
     
     user_list = []
     for username, data in users.items():
-        if username != ADMIN_USERNAME:  # عدم عرض المسؤول نفسه
-            user_list.append({
-                "username": username,
-                "created_at": data.get("created_at"),
-                "last_login": data.get("last_login"),
-                "created_by": data.get("created_by", "system")
-            })
+        # إضافة معلومات السيرفرات لكل مستخدم
+        user_dir = get_user_servers_dir(username)
+        srv_count = 0
+        if os.path.exists(user_dir):
+            srv_count = len([d for d in os.listdir(user_dir) if os.path.isdir(os.path.join(user_dir, d))])
+            
+        user_list.append({
+            "username": username,
+            "is_admin": data.get("is_admin", False),
+            "created_at": data.get("created_at"),
+            "last_login": data.get("last_login"),
+            "max_servers": data.get("max_servers", 3),
+            "expiry_days": data.get("expiry_days", 30),
+            "server_count": srv_count
+        })
     
     return jsonify({"success": True, "users": user_list})
+
+@app.route("/api/admin/servers", methods=["GET"])
+def get_all_servers():
+    """الحصول على قائمة بجميع السيرفرات في النظام (للمسؤول فقط)"""
+    if 'username' not in session or not is_admin(session['username']):
+        return jsonify({"success": False, "message": "غير مصرح"}), 403
+    
+    all_servers = []
+    if os.path.exists(USERS_DIR):
+        for username in os.listdir(USERS_DIR):
+            user_srv_dir = os.path.join(USERS_DIR, username, "SERVERS")
+            if os.path.exists(user_srv_dir):
+                for folder in os.listdir(user_srv_dir):
+                    srv_path = os.path.join(user_srv_dir, folder)
+                    if os.path.isdir(srv_path):
+                        meta_path = os.path.join(srv_path, "meta.json")
+                        display_name = folder
+                        if os.path.exists(meta_path):
+                            try:
+                                with open(meta_path, "r", encoding="utf-8") as f:
+                                    display_name = json.load(f).get("display_name", folder)
+                            except: pass
+                        
+                        all_servers.append({
+                            "owner": username,
+                            "folder": folder,
+                            "name": display_name,
+                            "path": srv_path
+                        })
+    
+    return jsonify({"success": True, "servers": all_servers})
 
 @app.route("/api/admin/delete-user", methods=["POST"])
 def delete_user():

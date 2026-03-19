@@ -1068,7 +1068,22 @@
 
         // ============== السيرفرات ==============
         async function loadServers() {
-            const res = await fetch('/api/servers');
+            // التحقق مما إذا كان الأدمن يزور سيرفر معين
+            const adminUser = sessionStorage.getItem('admin_view_user');
+            const adminFolder = sessionStorage.getItem('admin_view_folder');
+            
+            if (adminUser && adminFolder) {
+                // تنظيف sessionStorage فوراً لمنع التكرار عند التحديث
+                sessionStorage.removeItem('admin_view_user');
+                sessionStorage.removeItem('admin_view_folder');
+                
+                // فتح السيرفر مباشرة
+                openServer({folder: adminFolder, title: 'سيرفر ' + adminUser});
+                return;
+            }
+
+            // تعديل المسار ليتوافق مع bot.py
+            const res = await fetch('/api/servers_list');
             const data = await res.json();
             if (!data.success) return;
 
@@ -1087,7 +1102,7 @@
                 const card = document.createElement('div');
                 card.className = 'server-card';
                 card.innerHTML = `
-                    <div class="server-icon">🖥️</div>
+                    <div class="server-icon">${isOnline ? '⚡' : '🖥️'}</div>
                     <div class="server-name">${escHtml(srv.title)}</div>
                     <div class="server-type">${escHtml(srv.subtitle)}</div>
                     <div class="server-port">🔌 Port: ${srv.port || 'N/A'}</div>
@@ -1130,17 +1145,17 @@
             if (tab === 'files') loadFiles();
         }
 
-        // ============== Polling ==============
-        function startPolling() {
+        // ============== Poll        async function startPolling() {
             if (pollInterval) clearInterval(pollInterval);
-            fetchStats();
-            pollInterval = setInterval(fetchStats, 2500);
+            pollServerStatus();
+            pollInterval = setInterval(pollServerStatus, 3000);
         }
 
-        async function fetchStats() {
+        async function pollServerStatus() {
             if (!currentServer) return;
             try {
-                const res = await fetch(`/api/server/stats/${currentServer.folder}`);
+                // تعديل المسار ليتوافق مع bot.py
+                const res = await fetch(`/server/status/${currentServer.folder}`);
                 const data = await res.json();
                 if (!data.status) return;
 
@@ -1247,7 +1262,9 @@
             };
             showToast(msgs[action] || '...', 'info');
 
-            const res = await fetch(`/api/server/action/${currentServer.folder}/${action}`, {method: 'POST'});
+            // تعديل المسار ليتوافق مع bot.py
+            const url = `/server/action/${currentServer.folder}/${action}`;
+            const res = await fetch(url, {method: 'POST'});
             const data = await res.json();
             if (data.success) {
                 showToast(data.message || '✅ تم تنفيذ العملية', 'success');
@@ -1260,7 +1277,8 @@
             showConfirm('🗑️', 'حذف السيرفر', 'هل أنت متأكد من حذف السيرفر نهائياً؟ لا يمكن التراجع!', 'حذف نهائياً', async () => {
                 try {
                     showToast('⏳ جاري حذف السيرفر...', 'info');
-                    const res = await fetch(`/api/server/action/${currentServer.folder}/delete`, {
+                    // تعديل المسار ليتوافق مع bot.py
+                    const res = await fetch(`/server/delete/${currentServer.folder}`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'}
                     });
@@ -1283,7 +1301,8 @@
         // ============== إدارة الملفات ==============
         async function loadFiles() {
             document.getElementById('filesList').innerHTML = '<tr><td colspan="4" style="text-align:center;color:#8899aa;padding:20px;"><span class="spinner"></span> جاري التحميل...</td></tr>';
-            const res = await fetch(`/api/files/list/${currentServer.folder}`);
+            // تعديل المسار ليتوافق مع bot.py
+            const res = await fetch(`/files/list/${currentServer.folder}`);
             const files = await res.json();
             const list = document.getElementById('filesList');
 
@@ -1330,7 +1349,8 @@
             showConfirm('🗑️', 'حذف الملفات', `هل تريد حذف ${selected.length} ملف؟ لا يمكن التراجع!`, 'حذف', async () => {
                 try {
                     showToast('⏳ جاري حذف الملفات...', 'info');
-                    const res = await fetch(`/api/files/delete/${currentServer.folder}`, {
+                    // تعديل المسار ليتوافق مع bot.py
+                    const res = await fetch(`/files/delete/${currentServer.folder}`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({names: selected})
@@ -1354,7 +1374,8 @@
             showConfirm('🗑️', 'حذف الملف', `هل تريد حذف "${filename}"؟`, 'حذف', async () => {
                 try {
                     showToast('⏳ جاري حذف الملف...', 'info');
-                    const res = await fetch(`/api/files/delete/${currentServer.folder}`, {
+                    // تعديل المسار ليتوافق مع bot.py
+                    const res = await fetch(`/files/delete/${currentServer.folder}`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({names: [filename]})

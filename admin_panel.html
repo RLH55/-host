@@ -283,21 +283,55 @@
                 <tr>
                     <td><strong>${u.username}</strong></td>
                     <td><span class="user-badge ${u.is_admin ? 'admin' : 'user'}">${u.is_admin ? '👑 مسؤول' : '👤 مستخدم'}</span></td>
-                    <td>${u.max_servers}</td>
-                    <td>${u.expiry_days}</td>
-                    <td style="font-size: 11px; color: #8899aa;">${u.created_at.substring(0, 10)}</td>
+                    <td>${u.server_count || 0}</td>
+                    <td>${u.expiry_days || 30}</td>
+                    <td style="font-size: 11px; color: #8899aa;">${u.created_at ? u.created_at.substring(0, 10) : '---'}</td>
                     <td>
-                        ${u.username !== 'OMAR_ADMIN' ? `<button class="btn-action btn-delete" onclick="deleteUser('${u.username}')">🗑️ حذف</button>` : '<span style="color: #8899aa;">محمي</span>'}
+                        ${u.username !== 'OMAROMAR1983' ? `<button class="btn-action btn-delete" onclick="deleteUser('${u.username}')">🗑️ حذف</button>` : '<span style="color: #8899aa;">محمي</span>'}
                     </td>
                 </tr>
             `).join('');
         }
 
         async function loadServers() {
-            const res = await fetch('/api/admin/users');
+            const res = await fetch('/api/admin/servers');
             const data = await res.json();
-            // يمكن إضافة عرض السيرفرات هنا
-            document.getElementById('serversList').innerHTML = '<tr><td colspan="6" style="text-align: center; color: #8899aa;">لا توجد بيانات متاحة حالياً</td></tr>';
+            const list = document.getElementById('serversList');
+            
+            if (!data.servers || data.servers.length === 0) {
+                list.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #8899aa;">لا توجد سيرفرات حالياً</td></tr>';
+                return;
+            }
+
+            list.innerHTML = data.servers.map(s => `
+                <tr>
+                    <td><strong>${s.name}</strong></td>
+                    <td>${s.owner}</td>
+                    <td>Python</td>
+                    <td><span class="user-badge admin">نشط</span></td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick="visitServer('${s.owner}', '${s.folder}')">👁️ زيارة</button>
+                        <button class="btn-action btn-delete" onclick="deleteServerAdmin('${s.folder}')">🗑️ حذف</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function visitServer(owner, folder) {
+            // آلية لزيارة السيرفر كأدمن
+            sessionStorage.setItem('admin_view_user', owner);
+            sessionStorage.setItem('admin_view_folder', folder);
+            window.location.href = '/index.html';
+        }
+
+        async function deleteServerAdmin(folder) {
+            if (!confirm('هل أنت متأكد من حذف هذا السيرفر نهائياً؟')) return;
+            const res = await fetch(`/server/delete/${folder}`, { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                loadServers();
+                loadDashboard();
+            }
         }
 
         async function createNewUser() {
@@ -344,9 +378,10 @@
 
         async function deleteUser(username) {
             if (!confirm(`حذف المستخدم "${username}"؟`)) return;
-            const res = await fetch(`/api/admin/delete-user/${encodeURIComponent(username)}`, {
+            const res = await fetch('/api/admin/delete-user', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'}
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username})
             });
             const data = await res.json();
             if (data.success) {
