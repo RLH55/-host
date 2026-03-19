@@ -142,6 +142,70 @@ def monitor_processes():
 
 threading.Thread(target=monitor_processes, daemon=True).start()
 
+# وظيفة فحص انتهاء الصلاحية والحذف التلقائي
+def expiry_monitor():
+    while True:
+        try:
+            now = datetime.now()
+            users_to_delete = []
+            
+            for username, user in db.get("users", {}).items():
+                # لا نحذف الأدمن أبداً
+                if username == ADMIN_USERNAME or user.get("is_admin"):
+                    continue
+                
+                # لا نحذف الحسابات الدائمة
+                if user.get("is_permanent"):
+                    continue
+                
+                # التحقق من تاريخ الانتهاء
+                expiry_str = user.get("expiry_date")
+                if expiry_str:
+                    try:
+                        expiry = datetime.fromisoformat(expiry_str)
+                        if now > expiry:
+                            users_to_delete.append(username)
+                    except:
+                        pass
+            
+            # تنفيذ الحذف للحسابات المنتهية
+            for username in users_to_delete:
+                print(f"⏰ حذف الحساب المنتهي: {username}")
+                # استدعاء دالة الحذف الشاملة (نفس منطق الأدمن)
+                try:
+                    # حذف سيرفرات المستخدم
+                    user_servers = [fid for fid, srv in db["servers"].items() if srv["owner"] == username]
+                    for fid in user_servers:
+                        srv = db["servers"][fid]
+                        if srv.get("pid"):
+                            try: psutil.Process(srv.get("pid")).kill()
+                            except: pass
+                        if os.path.exists(srv.get("path", "")):
+                            shutil.rmtree(srv["path"], ignore_errors=True)
+                        db_handler.delete_server(fid)
+                        if fid in db["servers"]: del db["servers"][fid]
+                    
+                    # حذف المستخدم
+                    db_handler.delete_user(username)
+                    if username in db["users"]: del db["users"][username]
+                    
+                    # حذف المجلد
+                    user_dir = os.path.join(USERS_DIR, username)
+                    if os.path.exists(user_dir):
+                        shutil.rmtree(user_dir, ignore_errors=True)
+                    
+                    save_db(db)
+                except Exception as e:
+                    print(f"❌ خطأ أثناء حذف الحساب المنتهي {username}: {e}")
+                    
+        except Exception as e:
+            print(f"❌ خطأ في مراقب انتهاء الصلاحية: {e}")
+            
+        # الفحص كل ساعة لتقليل استهلاك الموارد
+        time.sleep(3600)
+
+threading.Thread(target=expiry_monitor, daemon=True).start()
+
 def get_current_user():
     if "username" in session:
         return db["users"].get(session["username"])
@@ -215,10 +279,19 @@ def api_login():
         # التحقق من المستخدمين الآخرين
         user = db["users"].get(username)
         if user and user["password"] == hashlib.sha256(password.encode()).hexdigest():
+            # التحقق من انتهاء الصلاحية
+            if not user.get("is_permanent", False) and user.get("expiry_date"):
+                try:
+                    expiry = datetime.fromisoformat(user["expiry_date"])
+                    if datetime.now() > expiry:
+                        return jsonify({"success": False, "message": "⚠️ انتهت صلاحية هذا الحساب، يرجى التواصل مع الإدارة"})
+                except:
+                    pass
+            
             is_auth = True
             is_admin_user = user.get("is_admin", False)
             redirect_url = "/admin" if is_admin_user else "/dashboard"
-            user["last_login"] = str(datetime.now())
+            user["last_login"] = datetime.now().isoformat()
             save_db(db)
 
     if is_auth:
@@ -818,19 +891,22 @@ def admin_create_user():
     username = data.get("username", "").strip()
     password = data.get("password", "").strip()
     max_servers = int(data.get("max_servers", 3))
-    # جعل الحسابات دائمة بشكل افتراضي (10 سنوات)
-    expiry_days = int(data.get("expiry_days", 3650))
+    expiry_days = int(data.get("expiry_days", 30))
     
     if username in db["users"]:
         return jsonify({"success": False, "message": "المستخدم موجود بالفعل"})
+    
+    now = datetime.now()
+    expiry_date = now + timedelta(days=expiry_days)
         
     db["users"][username] = {
         "password": hashlib.sha256(password.encode()).hexdigest(),
         "is_admin": False,
-        "created_at": str(datetime.now()),
+        "created_at": now.isoformat(),
+        "expiry_date": expiry_date.isoformat(),
         "max_servers": max_servers,
         "expiry_days": expiry_days,
-        "is_permanent": True # علامة إضافية للتثبيت
+        "is_permanent": False
     }
     save_db(db)
     return jsonify({"success": True, "message": "✅ تم إنشاء الحساب"})
