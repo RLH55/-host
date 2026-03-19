@@ -413,7 +413,10 @@ def server_action(folder, action):
         return jsonify({"success": False}), 401
     
     srv = db["servers"].get(folder)
-    if not srv or srv["owner"] != session["username"]:
+    if not srv:
+        return jsonify({"success": False, "message": "السيرفر غير موجود"})
+    # السماح للمستخدم المالك أو للأدمن بالتحكم في سيرفراتهم
+    if srv["owner"] != session["username"] and not is_admin(session["username"]):
         return jsonify({"success": False, "message": "غير مصرح"})
     
     if action == "start":
@@ -744,7 +747,8 @@ def create_file(folder):
 def delete_files(folder):
     if "username" not in session: return jsonify({"success": False, "message": "غير مصرح"}), 401
     srv = db["servers"].get(folder)
-    if not srv or srv["owner"] != session["username"]: return jsonify({"success": False, "message": "غير مصرح"})
+    if not srv: return jsonify({"success": False, "message": "السيرفر غير موجود"})
+    if srv["owner"] != session["username"] and not is_admin(session["username"]): return jsonify({"success": False, "message": "غير مصرح"})
     
     data = request.get_json() or {}
     # قبول name أو names أو قائمة

@@ -1300,9 +1300,9 @@
                     </td>
                     <td style="color:#8899aa;">${f.size}</td>
                     <td class="file-actions">
-                        ${!f.is_dir ? `<button class="btn-file btn-view" onclick="viewFile('${escHtml(f.name)}')">📝 تعديل</button>` : ''}
-                        <button class="btn-file btn-rename-file" onclick="renameFile('${escHtml(f.name)}')">✏️ اسم</button>
-                        <button class="btn-file btn-delete-file" onclick="deleteFileSingle('${escHtml(f.name)}')">🗑️</button>
+                        ${!f.is_dir ? `<button class="btn-file btn-view" data-filename="${escHtml(f.name)}" onclick="viewFile(this.getAttribute('data-filename'))">📝 تعديل</button>` : ''}
+                        <button class="btn-file btn-rename-file" data-filename="${escHtml(f.name)}" onclick="renameFile(this.getAttribute('data-filename'))">✏️ اسم</button>
+                        <button class="btn-file btn-delete-file" data-filename="${escHtml(f.name)}" onclick="deleteFileSingle(this.getAttribute('data-filename'))">🗑️</button>
                     </td>
                 </tr>
             `).join('');
@@ -1320,7 +1320,12 @@
         }
 
         async function deleteSelectedFiles() {
-            const selected = Array.from(document.querySelectorAll('.select-file:checked')).map(cb => cb.value);
+            const selected = Array.from(document.querySelectorAll('.select-file:checked')).map(cb => {
+                // استخدام القيمة الأصلية من الـ checkbox مباشرة
+                const row = cb.closest('tr');
+                const deleteBtn = row ? row.querySelector('.btn-delete-file') : null;
+                return deleteBtn ? deleteBtn.getAttribute('data-filename') : cb.value;
+            });
             if (selected.length === 0) { showToast('⚠️ الرجاء تحديد ملفات أولاً', 'warning'); return; }
             showConfirm('🗑️', 'حذف الملفات', `هل تريد حذف ${selected.length} ملف؟ لا يمكن التراجع!`, 'حذف', async () => {
                 try {

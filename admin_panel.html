@@ -344,14 +344,16 @@
 
         async function deleteUser(username) {
             if (!confirm(`حذف المستخدم "${username}"؟`)) return;
-            const res = await fetch('/api/admin/delete-user', {
+            const res = await fetch(`/api/admin/delete-user/${encodeURIComponent(username)}`, {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({username})
+                headers: {'Content-Type': 'application/json'}
             });
             const data = await res.json();
             if (data.success) {
+                showAlert('userAlert', `✅ تم حذف المستخدم ${username} بنجاح`, 'success');
                 loadUsers();
+            } else {
+                showAlert('userAlert', '❌ ' + (data.message || 'فشل الحذف'), 'error');
             }
         }
 
