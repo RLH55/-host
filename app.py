@@ -200,19 +200,18 @@ def api_login():
     password = data.get("password", "").strip()
     
     # التحقق من الأدمن أولاً بالبيانات المباشرة لضمان الدخول دائماً
-    if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
-        session['username'] = username
+    if username.strip() == ADMIN_USERNAME and password.strip() == ADMIN_PASSWORD:
+        session['username'] = ADMIN_USERNAME
         session.permanent = True
-        # التأكد من وجود الأدمن في قاعدة البيانات
-        if username not in db["users"]:
-            db["users"][username] = {
-                "password": hashlib.sha256(password.encode()).hexdigest(),
-                "is_admin": True,
-                "created_at": str(datetime.now()),
-                "max_servers": 10,
-                "expiry_days": 365
-            }
-        db["users"][username]["last_login"] = str(datetime.now())
+        # التأكد من وجود الأدمن في قاعدة البيانات وتحديث بياناته لضمان المطابقة
+        db["users"][ADMIN_USERNAME] = {
+            "password": hashlib.sha256(ADMIN_PASSWORD.encode()).hexdigest(),
+            "is_admin": True,
+            "created_at": db["users"].get(ADMIN_USERNAME, {}).get("created_at", str(datetime.now())),
+            "last_login": str(datetime.now()),
+            "max_servers": 100,
+            "expiry_days": 3650
+        }
         save_db()
         return jsonify({"success": True, "redirect": "/admin"})
 
