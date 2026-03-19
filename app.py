@@ -1,4 +1,5 @@
 import os
+import os
 import json
 import re
 import subprocess
@@ -93,7 +94,7 @@ def load_db():
 
 def save_db(new_db=None):
     global db
-    if new_db: db = new_db
+    if new_db is not None: db = new_db
     try:
         with open(DB_FILE, 'w', encoding='utf-8') as f:
             json.dump(db, f, indent=4, ensure_ascii=False)
@@ -438,14 +439,28 @@ def server_action(folder, action):
         return server_action(folder, "start")
         
     elif action == "delete":
-        server_action(folder, "stop")
+        # إيقاف السيرفر أولاً
         try:
-            shutil.rmtree(srv["path"])
-            del db["servers"][folder]
-            save_db(db)
-            return jsonify({"success": True, "message": "🗑️ تم حذف السيرفر نهائياً"})
-        except:
-            return jsonify({"success": False, "message": "فشل الحذف"})
+            if srv.get("pid"):
+                p = psutil.Process(srv["pid"])
+                for child in p.children(recursive=True): child.kill()
+                p.kill()
+        except: pass
+        
+        # محاولة حذف المجلد مع معالجة الأخطاء
+        import shutil
+        import time
+        for _ in range(3): # محاولة 3 مرات
+            try:
+                if os.path.exists(srv["path"]):
+                    shutil.rmtree(srv["path"], ignore_errors=True)
+                if folder in db["servers"]:
+                    del db["servers"][folder]
+                save_db()
+                return jsonify({"success": True, "message": "🗑️ تم حذف السيرفر نهائياً"})
+            except:
+                time.sleep(1)
+        return jsonify({"success": False, "message": "فشل الحذف، يرجى المحاولة لاحقاً"})
             
     return jsonify({"success": False})
 

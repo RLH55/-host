@@ -143,6 +143,28 @@
             transition: opacity 0.3s;
         }
         .server-card:hover { border-color: #00d4ff; box-shadow: 0 15px 40px rgba(0, 212, 255, 0.2); transform: translateY(-5px); }
+        .btn-delete-server-small {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 68, 68, 0.1);
+            border: 1px solid rgba(255, 68, 68, 0.2);
+            color: #ff4444;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+        .btn-delete-server-small:hover {
+            background: #ff4444;
+            color: white;
+            transform: scale(1.1);
+        }
         .server-card:hover::before { opacity: 1; }
         .server-icon { font-size: 36px; margin-bottom: 12px; }
         .server-name { font-size: 17px; font-weight: 800; margin-bottom: 6px; }
@@ -759,7 +781,7 @@
                     <button class="btn-action btn-start" onclick="serverAction('start')">▶ تشغيل</button>
                     <button class="btn-action btn-restart" onclick="serverAction('restart')">🔄 إعادة تشغيل</button>
                     <button class="btn-action btn-stop" onclick="serverAction('stop')">⏹ إيقاف</button>
-                    <button class="btn-action btn-delete" onclick="confirmDelete()">🗑️ حذف السيرفر</button>
+                     <!-- تم نقل زر الحذف لصفحة السيرفرات الرئيسية -->
                 </div>
 
                 <div class="stats-grid">
@@ -953,6 +975,7 @@
                 const card = document.createElement('div');
                 card.className = 'server-card';
                 card.innerHTML = `
+                    <button class="btn-delete-server-small" onclick="event.stopPropagation(); deleteServerMain('${srv.folder}', '${escHtml(srv.title)}')">🗑️</button>
                     <div class="server-icon">🖥️</div>
                     <div class="server-name">${escHtml(srv.title)}</div>
                     <div class="server-type">${escHtml(srv.subtitle)}</div>
@@ -974,6 +997,20 @@
             document.getElementById('serverTitle').textContent = srv.title;
             switchTab('console');
             startPolling();
+        }
+
+        async function deleteServerMain(folder, title) {
+            showConfirm('🗑️', 'حذف السيرفر', `هل أنت متأكد من حذف سيرفر "${title}" نهائياً؟ لا يمكن التراجع!`, 'حذف نهائياً', async () => {
+                showToast('🗑️ جاري الحذف...', 'info');
+                const res = await fetch(`/api/server/action/${folder}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({action: 'delete'})
+                });
+                const data = await res.json();
+                showToast(data.message, data.success ? 'success' : 'error');
+                loadServers();
+            });
         }
 
         function goHome() {
@@ -1131,19 +1168,6 @@
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({names: selected})
-                });
-                const data = await res.json();
-                showToast(data.message, 'success');
-                loadFiles();
-            });
-        }
-
-        async function deleteAllFiles() {
-            showConfirm('🔥', 'حذف جميع الملفات', 'هل أنت متأكد من حذف جميع ملفات السيرفر؟ لا يمكن التراجع!', 'حذف الكل', async () => {
-                const res = await fetch(`/api/files/delete/${currentServer.folder}`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({all: true})
                 });
                 const data = await res.json();
                 showToast(data.message, 'success');
