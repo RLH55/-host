@@ -739,10 +739,10 @@
 
             <!-- تبويب الكونسول -->
             <div id="consoleTab">
-                <!-- زر حالة التشغي<div id="consoleTab">
+                <!-- زر الرجوع للسيرفرات -->
                 <div style="margin-bottom: 15px; display: flex; gap: 10px;">
-                    <button class="btn-action btn-edit" onclick="goHome()" style="background: rgba(0, 212, 255, 0.1); border: 1px solid #00d4ff; color: #00d4ff; padding: 8px 15px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                        ⬅️ الرجوع للسيرفرات
+                    <button onclick="goHome()" style="background: rgba(0, 212, 255, 0.15); border: 2px solid #00d4ff; color: #00d4ff; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; font-family: 'Tajawal', sans-serif; font-size: 14px; transition: all 0.3s;" onmouseover="this.style.background='rgba(0,212,255,0.3)'" onmouseout="this.style.background='rgba(0,212,255,0.15)'">
+                        ⬅️ الرجوع إلى صفحة السيرفرات
                     </button>
                 </div>
                 <div class="console-status-bar">
@@ -1186,6 +1186,7 @@
 
         async function uploadFiles(files) {
             if (!files || files.length === 0) return;
+            if (!currentServer) { showToast('⚠️ افتح سيرفراً أولاً', 'warning'); return; }
             showToast(`📤 جاري رفع ${files.length} ملف...`, 'info');
             const fd = new FormData();
             for (let f of files) fd.append('files[]', f);
@@ -1195,10 +1196,10 @@
                 const data = await res.json();
                 if (data.success) {
                     showToast(data.message, 'success');
-                    // التأكد من البقاء في صفحة الملفات وتحديث القائمة فقط
-                    if (typeof loadFiles === 'function') {
-                        loadFiles();
-                    }
+                    // البقاء في صفحة الملفات وتحديث القائمة فقط دون التنقل
+                    document.getElementById('filesTab').style.display = 'block';
+                    document.getElementById('consoleTab').style.display = 'none';
+                    loadFiles();
                 } else {
                     showToast('❌ ' + (data.message || 'فشل الرفع'), 'error');
                 }
